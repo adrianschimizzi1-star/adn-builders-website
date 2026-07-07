@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { Link, type LinkProps } from "react-router-dom";
 
 type Variant = "primary" | "outline" | "solid-light";
 type Size = "md" | "lg";
@@ -27,12 +28,17 @@ type CommonProps = {
   className?: string;
 };
 
+// `to`   → in-app SPA navigation via React Router <Link>
+// `href` → plain anchor (external, tel:, mailto:, in-page #hash)
+// neither → <button>
+type ButtonAsRouterLink = CommonProps &
+  Omit<LinkProps, "className"> & { to: string; href?: undefined };
 type ButtonAsLink = CommonProps &
-  ComponentPropsWithoutRef<"a"> & { href: string };
+  ComponentPropsWithoutRef<"a"> & { href: string; to?: undefined };
 type ButtonAsButton = CommonProps &
-  ComponentPropsWithoutRef<"button"> & { href?: undefined };
+  ComponentPropsWithoutRef<"button"> & { href?: undefined; to?: undefined };
 
-export function Button(props: ButtonAsLink | ButtonAsButton) {
+export function Button(props: ButtonAsRouterLink | ButtonAsLink | ButtonAsButton) {
   const {
     variant = "primary",
     size = "md",
@@ -41,6 +47,15 @@ export function Button(props: ButtonAsLink | ButtonAsButton) {
     ...rest
   } = props;
   const classes = `${base} ${variants[variant]} ${sizes[size]} ${className}`;
+
+  if ("to" in props && props.to !== undefined) {
+    const { to, ...linkRest } = rest as Omit<LinkProps, "className">;
+    return (
+      <Link to={to} className={classes} {...linkRest}>
+        {children}
+      </Link>
+    );
+  }
 
   if ("href" in props && props.href !== undefined) {
     const { href, ...anchorRest } = rest as ComponentPropsWithoutRef<"a">;

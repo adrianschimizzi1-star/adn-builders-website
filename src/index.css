@@ -2,11 +2,19 @@
 
 /*
   ============================================================================
-   ADN BUILDERS — THEME TOKENS  (dark premium, on-brand to the logo)
+   ADN BUILDERS — THEME TOKENS  (charcoal blue-grey, on-brand to the logo)
   ============================================================================
-   Palette is derived from the ADN Builders logo:
-     • navy  — the deep blue of the "ADN" wordmark (structure / dark canvas)
-     • accent (orange) — the "BUILDERS" orange (calls to action + highlights)
+   Theme: a darker, desaturated charcoal / gunmetal canvas with a subtle cool
+   blue cast — closer to black than the original deep navy — so project
+   photography glows and the orange CTAs are unmistakably the most prominent
+   thing on the page.
+
+   Palette roles:
+     • navy-*  — the charcoal blue-grey ramp (dark canvas → light neutrals/text).
+                 The token name is kept for continuity; the hue is now a
+                 desaturated cool grey, not saturated navy.
+     • accent (orange) — the "BUILDERS" orange from the logo (calls to action
+                 + highlights only). Pops harder on the darker canvas.
 
    Components reference these tokens by class (e.g. bg-navy-950, text-accent-500)
    — no hardcoded hex values in components.
@@ -16,18 +24,20 @@
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-heading: var(--font-sans);
 
-  /* Brand navy — dark canvas + neutrals */
-  --color-navy-50: #f1f3fa;
-  --color-navy-100: #e1e6f4;
-  --color-navy-200: #c2cbe7;
-  --color-navy-300: #97a5d3;
-  --color-navy-400: #6577b0;
-  --color-navy-500: #43548c;
-  --color-navy-600: #2f3e6f;
-  --color-navy-700: #232f5a;
-  --color-navy-800: #182146;
-  --color-navy-900: #101736;
-  --color-navy-950: #080c22;
+  /* Charcoal blue-grey — dark canvas + cool neutrals/text.
+     950/900/800 = base / surface / elevated; 700 = default border;
+     300 = muted text, 200 = body text, 50 = near-white primary text. */
+  --color-navy-50: #f2f4f7;
+  --color-navy-100: #e3e7ed;
+  --color-navy-200: #c6cdd9;
+  --color-navy-300: #9aa3b2;
+  --color-navy-400: #808a9a;
+  --color-navy-500: #656f7f;
+  --color-navy-600: #48515f;
+  --color-navy-700: #232b37;
+  --color-navy-800: #1a2029;
+  --color-navy-900: #131720;
+  --color-navy-950: #0b0e13;
 
   /* Accent orange — CTAs + highlights */
   --color-accent-50: #fdf3ea;

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { projects, galleryFilters, type GalleryCategory } from "../data/gallery";
 import { SectionHeading } from "../components/SectionHeading";
 import { GalleryGrid } from "../components/GalleryGrid";
@@ -53,6 +55,16 @@ export function Gallery() {
             No projects in this category yet.
           </p>
         )}
+
+        <div className="mt-10">
+          <Link
+            to="/gallery"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
+          >
+            View all Projects
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
       </div>
 
       <Lightbox

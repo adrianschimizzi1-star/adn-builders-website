@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Phone } from "lucide-react";
 import { business, telHref } from "../data/business";
 import { Logo } from "../components/Logo";
 import { Button } from "../components/Button";
 
 const links = [
-  { href: "#services", label: "Services" },
-  { href: "#gallery", label: "Projects" },
-  { href: "#about", label: "About" },
-  { href: "#contact", label: "Contact" },
+  { to: "/services", label: "Services" },
+  { to: "/gallery", label: "Projects" },
+  { to: "/about", label: "About" },
+  { to: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {
@@ -38,22 +39,29 @@ export function Navbar() {
       }`}
     >
       <nav className="container-page flex h-16 items-center justify-between">
-        <a href="#home" aria-label={`${business.name} home`}>
+        <Link to="/" aria-label={`${business.name} home`}>
           <Logo />
-        </a>
+        </Link>
 
         {/* Desktop */}
         <div className="hidden items-center gap-8 md:flex">
           <ul className="flex items-center gap-7 text-sm font-medium text-navy-200">
             {links.map((l) => (
-              <li key={l.href}>
-                <a href={l.href} className="transition-colors hover:text-white">
+              <li key={l.to}>
+                <NavLink
+                  to={l.to}
+                  className={({ isActive }) =>
+                    `transition-colors ${
+                      isActive ? "text-white" : "hover:text-white"
+                    }`
+                  }
+                >
                   {l.label}
-                </a>
+                </NavLink>
               </li>
             ))}
           </ul>
-          <Button href="#quote">Get a Free Quote</Button>
+          <Button to="/contact">Get a Free Quote</Button>
         </div>
 
         {/* Mobile */}
@@ -86,19 +94,23 @@ export function Navbar() {
         <div className="border-t border-white/10 bg-navy-950 md:hidden">
           <ul className="container-page flex flex-col py-3 text-base font-medium text-navy-100">
             {links.map((l) => (
-              <li key={l.href}>
-                <a
-                  href={l.href}
+              <li key={l.to}>
+                <NavLink
+                  to={l.to}
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-2 py-3 hover:bg-white/5"
+                  className={({ isActive }) =>
+                    `block rounded-lg px-2 py-3 hover:bg-white/5 ${
+                      isActive ? "text-white" : ""
+                    }`
+                  }
                 >
                   {l.label}
-                </a>
+                </NavLink>
               </li>
             ))}
             <li className="mt-2 px-2 pb-2">
               <Button
-                href="#quote"
+                to="/contact"
                 size="lg"
                 className="w-full"
                 onClick={() => setOpen(false)}

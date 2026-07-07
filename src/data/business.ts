@@ -9,6 +9,11 @@
 /** Marks a value that still needs the client's real content. */
 export const NEEDS_INPUT = (placeholder: string) => placeholder;
 
+export interface OpeningHours {
+  days: string;
+  time: string;
+}
+
 export interface BusinessInfo {
   name: string;
   tagline: string;
@@ -18,6 +23,8 @@ export interface BusinessInfo {
   email: string;
   licenceNumber: string;
   fullyInsured: boolean;
+  /** Opening hours — shown on the /contact page. */
+  hours: OpeningHours[];
   social: { instagram: string; facebook: string };
 }
 
@@ -29,12 +36,19 @@ export const business: BusinessInfo = {
   serviceArea: "Canberra & surrounding ACT",
 
   // --- Contact ---
-  phone: NEEDS_INPUT("0400 000 000"), // click-to-call
-  email: NEEDS_INPUT("hello@adnbuilders.com.au"),
+  phone: "0417 424 408", // click-to-call
+  email: "adnbuilders1@gmail.com",
 
   // --- Credentials ---
   licenceNumber: NEEDS_INPUT("ACT Builder Licence #000000"),
   fullyInsured: true,
+
+  // --- Opening hours (confirm with client) ---
+  hours: [
+    { days: "Monday – Friday", time: "7:00am – 5:00pm" },
+    { days: "Saturday", time: "By appointment" },
+    { days: "Sunday", time: "Closed" },
+  ],
 
   social: { instagram: "", facebook: "" },
 };

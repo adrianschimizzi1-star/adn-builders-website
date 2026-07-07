@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, ShieldCheck } from "lucide-react";
 import { business, telHref, mailHref } from "../data/business";
 import { Logo } from "../components/Logo";
@@ -57,10 +58,10 @@ export function Footer() {
             Explore
           </h3>
           <ul className="mt-4 space-y-3 text-sm">
-            <li><a href="#services" className="hover:text-accent-300">Services</a></li>
-            <li><a href="#gallery" className="hover:text-accent-300">Projects</a></li>
-            <li><a href="#about" className="hover:text-accent-300">About</a></li>
-            <li><a href="#quote" className="hover:text-accent-300">Get a free quote</a></li>
+            <li><Link to="/services" className="hover:text-accent-300">Services</Link></li>
+            <li><Link to="/gallery" className="hover:text-accent-300">Projects</Link></li>
+            <li><Link to="/about" className="hover:text-accent-300">About</Link></li>
+            <li><Link to="/contact" className="hover:text-accent-300">Get a free quote</Link></li>
           </ul>
         </div>
 
@@ -85,7 +86,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-page flex flex-col items-center justify-between gap-2 py-6 text-xs text-navy-500 sm:flex-row">
+        <div className="container-page flex flex-col items-center justify-between gap-2 py-6 text-xs text-navy-400 sm:flex-row">
           <p>© {year} {business.name}. All rights reserved.</p>
           <p>{business.licenceNumber}</p>
         </div>

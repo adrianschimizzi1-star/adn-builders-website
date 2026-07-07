@@ -1,4 +1,5 @@
-import { ShieldCheck, BadgeCheck, Check } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ShieldCheck, BadgeCheck, Check, ArrowRight } from "lucide-react";
 import { business } from "../data/business";
 import { about } from "../data/about";
 import { SectionHeading } from "../components/SectionHeading";
@@ -85,9 +86,18 @@ export function About() {
             ))}
           </ul>
 
-          <Button href="#quote" size="lg" className="mt-8">
-            Work with us
-          </Button>
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+            <Button href="#quote" size="lg">
+              Work with us
+            </Button>
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
+            >
+              More about the team
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
         </div>
       </div>
     </section>
