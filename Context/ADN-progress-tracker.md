@@ -5,7 +5,7 @@ and what still needs the client. Update this file in the same commit
 as any feature (both spec 03 and spec 04 require it). Newest work at
 the top of each phase.
 
-> Last updated: 2026-07-07
+> Last updated: 2026-07-08
 
 ## Legend
 
@@ -22,6 +22,7 @@ the top of each phase.
 | 0 | Scaffold, theme, content wiring, deploy setup | ✅ Done |
 | 1 | Charcoal blue-grey retheme (spec `03-colour-revision.md`) | ✅ Done |
 | 2 | Multi-page conversion (spec `04-multipage-fix.md`) | ✅ Done |
+| 3 | Website fixes: blends, reviews, team, deep-links (spec `06-website-fixes-V!.md`) | ✅ Done |
 | — | Client content still needed (`NEEDS_INPUT`) | ⏳ Outstanding |
 | — | Live Vercel deploy + hard-refresh check | ⏳ Pending |
 
@@ -138,6 +139,84 @@ repo's `Context/ADN-*.md` files.
 
 ---
 
+## Phase 3 — Website fixes ✅
+
+Spec: `06-website-fixes-V!.md`. Goal: the site reads as one continuous,
+polished page — soft section boundaries, a more prominent hero, human
+content (team cards + curated reviews) replacing tick clutter, and
+Services images that deep-link into the matching Projects category.
+Implemented one step at a time; `npm run build` green after each, then
+the whole site re-checked in a headless browser.
+
+- [x] **Step 1 — Section fade transitions.** Added six reusable
+      gradient-blend classes to `src/index.css` (`fade-t-from-950/900`,
+      `fade-b-to-950/900`, `fade-y-in-950/900`) — an ~80px (`--fade-zone`)
+      background gradient that eases one dark shade into the next. Applied
+      to every shade-change boundary on Home, Services, About, and Contact
+      (Gallery page is single-shade). Pure background treatment, so it
+      never overlaps content.
+- [x] **Step 2 — Copy replacement.** `business.serviceArea` →
+      **"Canberra & the Capital Region"** (exact string; renders in Hero,
+      QuoteForm, Footer). Grepped for variants — the only other instance
+      was the About `longBio` prose ("Canberra and the surrounding ACT"),
+      updated to "Canberra and the Capital Region" (kept "and" for prose).
+      Zero "surrounding"/old-tagline instances remain.
+- [x] **Step 3 — Hero overlay.** Lightened both legibility overlays in
+      `Hero.tsx` ~20% (e.g. horizontal `950 → 950/90 · 850/65 → …/25`),
+      keeping the text-side (left/bottom) dark enough for AA while the
+      photo now reads clearly through the centre/right. Verified against
+      the real `hero-bathroom.jpg`.
+- [x] **Step 4 — Team section (about page).** Deleted the licence /
+      "Fully insured" badges and the tick highlights on `AboutPage.tsx`;
+      replaced with a responsive 4-card grid (4:5 photo, name,
+      description; `rounded-2xl` card + clipped image). New `team[]` data
+      in `about.ts` — placeholder names/descriptions + placeholder image
+      block, all `TODO: replace`. Licence still shown site-wide via the
+      footer.
+- [x] **Step 5 — Home "Team behind ADN".** Removed only the tick list
+      from the home `About.tsx` section; bio, licence/insurance credential
+      cards, and CTAs kept.
+- [x] **Step 6 — Services.** Trimmed each service's "What's included"
+      list from 5 → the 4 strongest (`services.ts`). Added deep-link
+      support to `GalleryPage.tsx` (`?cat=<category>` → pre-selected
+      filter, applied on direct load / hard refresh, not just on click).
+      Home `ServiceCard` gained a clickable representative image (category
+      project photo, placeholder fallback) linking to `/gallery?cat=…`
+      with a "View projects" hover cue; `/services` blocks gained a
+      "View all →" deep-link on each project strip.
+- [x] **Step 7 — Reviews component.** New `components/Reviews.tsx` (the
+      only new component the spec authorises) + `data/reviews.ts`. Full
+      variant (4 cards) on Home, compact (3 cards) on Contact; first-name,
+      5-star display, quote, `rounded-2xl` cards matching the team cards,
+      and a "Read more on Google" button (`target="_blank"
+      rel="noopener noreferrer"`, href falls back to `#` until the owner
+      supplies the URL). All content `TODO: replace`.
+- [x] **Step 8 — Contact cleanup.** Deleted the Opening Hours card from
+      `ContactPage.tsx` (its only header card — phone/email/area live in
+      the reused QuoteForm, so no layout hole); removed the now-unused
+      `Clock` import.
+- [x] **Step 9 — Scroll animations.** One IntersectionObserver utility
+      (`hooks/useScrollReveal.ts`, wired in `Layout.tsx`, re-scans per
+      route) toggles `.is-visible` once per element. CSS `.reveal` /
+      `.reveal-stagger` (fade-up + small grid stagger) live inside a
+      `prefers-reduced-motion: no-preference` guard, so reduced-motion
+      users get instant, un-transformed content. Applied to section
+      headings, cards, and service blocks.
+- [x] **Follow-up — navbar logo.** Bumped the top-left logo `h-9 → h-11`
+      (footer logo unchanged).
+
+Adaptations to note: (1) this is a dark site — the "light/dark rhythm"
+the spec refers to is the `navy-950`/`navy-900` alternation; boundaries
+are softened between those shades. (2) The spec's "clickable service
+image" had no literal home equivalent (home service cards were
+icon-only), so each home `ServiceCard` gained a representative
+category image as that clickable element, plus a deep-link on the
+`/services` strips. (3) "Team section" (4-card grid) maps to the About
+**page**; "Home — Team behind ADN" maps to the home `About` section
+(ticks removed, rest kept). Verified end-to-end via headless Chrome:
+hero photo prominence, team grid, compact/full reviews, contact with no
+hours card, and `?cat=` deep-link filtering on direct URL load.
+
 ## Outstanding — needs the client (`NEEDS_INPUT`)
 
 Search `src/data/` for `NEEDS_INPUT` to find these in code.
@@ -153,6 +232,14 @@ Search `src/data/` for `NEEDS_INPUT` to find these in code.
       (falls back to a dark gradient until then)
 - [ ] **Gallery photos** — add images to `public/projects/` and set
       `src` on entries in `gallery.ts` (placeholders show meanwhile)
+- [ ] **Team members** — `about.ts` `team[]`: 4 real names +
+      descriptions + portrait photos (drop in `public/team/`, set
+      `photo`). Placeholder cards show meanwhile.
+- [ ] **Reviews** — `reviews.ts` `reviews[]`: real first names, ratings,
+      and quotes (placeholders show meanwhile)
+- [ ] **Google reviews URL** — `reviews.ts` `googleReviewsUrl`: ADN's
+      Google Business reviews page (the "Read more on Google" button falls
+      back to `#` until set)
 
 ## Verification checklist (both specs' "Check When Done")
 
@@ -165,6 +252,22 @@ Search `src/data/` for `NEEDS_INPUT` to find these in code.
 - [x] Form submits from both Home and `/contact` (same QuoteForm)
 - [x] Context docs updated (ui-context, architecture, overview, tracker)
 - [~] Deep links survive a hard refresh on the **deployed** site
+
+Spec 06 "Check When Done":
+
+- [x] Nothing from "Out of Scope" touched (no live Google widget/API, no
+      CMS/backend, form fields + submission unchanged, filter system
+      reused not rebuilt); only one new component (Reviews)
+- [x] Zero "Canberra & Surrounding ACT" (and variants) remain
+- [x] All light/dark boundaries blend; no hard cuts
+- [x] Team: no licence/insured/ticks; 4 rounded cards, responsive
+- [x] Home: hero image more prominent + legible; team block ticks gone;
+      reviews present with Google-link placeholder
+- [x] Contact: no Opening Hours card; compact reviews; top boundary faded
+- [x] Services: image click → Projects filtered (incl. direct URL load);
+      no service has >4 ticks; hover cue present
+- [x] Animations subtle, fire once, respect `prefers-reduced-motion`
+- [x] All `TODO` placeholders clearly marked for the owner
 
 ## Dev aids (not part of either spec)
 

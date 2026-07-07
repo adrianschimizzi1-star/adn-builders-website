@@ -14,7 +14,7 @@ export function Services() {
           intro="From first sketch to final finish, we handle the trades, timelines, and quality so you don't have to."
         />
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="reveal-stagger mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}

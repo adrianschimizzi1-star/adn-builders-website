@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   projects,
   galleryFilters,
@@ -8,14 +9,32 @@ import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
 
+/** Coerce a `?cat=` value to a known filter id, falling back to "all". */
+function toCategory(value: string | null): GalleryCategory {
+  return galleryFilters.some((f) => f.id === value)
+    ? (value as GalleryCategory)
+    : "all";
+}
+
 export default function GalleryPage() {
   usePageMeta(
     "Project Gallery | ADN Builders",
     "Browse renovations, new builds, bathrooms, and outdoor projects completed by ADN Builders across Canberra.",
   );
 
-  const [filter, setFilter] = useState<GalleryCategory>("all");
+  // Deep link support: Services images link here as /gallery?cat=<category>.
+  // Read the param for the initial filter (so it's applied on direct load /
+  // hard refresh, not just on click) and keep it in sync if the param changes.
+  const [searchParams] = useSearchParams();
+  const catParam = searchParams.get("cat");
+  const [filter, setFilter] = useState<GalleryCategory>(() =>
+    toCategory(catParam),
+  );
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    setFilter(toCategory(catParam));
+  }, [catParam]);
 
   const visible =
     filter === "all"

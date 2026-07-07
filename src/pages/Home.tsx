@@ -2,6 +2,7 @@ import { Hero } from "../sections/Hero";
 import { Services } from "../sections/Services";
 import { Gallery } from "../sections/Gallery";
 import { About } from "../sections/About";
+import { Reviews } from "../components/Reviews";
 import { QuoteForm } from "../sections/QuoteForm";
 import { usePageMeta } from "../hooks/usePageMeta";
 
@@ -23,6 +24,7 @@ export default function Home() {
       <Services />
       <Gallery />
       <About />
+      <Reviews className="fade-t-from-950 bg-navy-900" />
       <QuoteForm showContactLink />
     </>
   );

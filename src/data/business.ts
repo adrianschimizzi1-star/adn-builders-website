@@ -33,7 +33,7 @@ export const business: BusinessInfo = {
   tagline: "Quality renovations and new builds in Canberra",
   intro:
     "Licensed and fully insured, we bring craftsmanship and care to every renovation, extension, and new home across Canberra.",
-  serviceArea: "Canberra & surrounding ACT",
+  serviceArea: "Canberra & the Capital Region",
 
   // --- Contact ---
   phone: "0417 424 408", // click-to-call

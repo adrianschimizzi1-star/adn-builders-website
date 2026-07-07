@@ -92,6 +92,114 @@
       linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 34px 34px;
   }
+
+  /* --------------------------------------------------------------------------
+     Soft section boundaries
+     --------------------------------------------------------------------------
+     The site alternates two dark shades (navy-950 base / navy-900 surface).
+     Rather than hard-cut at each shade change, the entering (or leaving)
+     section paints an ~80px gradient at that edge that eases the adjacent
+     shade into its own. Purely a background treatment on the <section> — it
+     never overlaps content, so no z-index juggling is needed. The gradient's
+     final stop holds, so the rest of the section stays its own solid shade.
+     Naming: `fade-t-from-X` = leading edge eases down from shade X;
+             `fade-b-to-X`   = trailing edge eases up into shade X;
+             `fade-y-in-X`   = both edges ease from/into shade X (body is the
+                               opposite shade), for a section flanked on both
+                               sides by shade X. */
+  :root {
+    --fade-zone: 5rem; /* ~80px, within the 60–100px the spec asks for */
+  }
+
+  .fade-t-from-950 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone)
+    );
+  }
+  .fade-t-from-900 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone)
+    );
+  }
+  .fade-b-to-950 {
+    background-image: linear-gradient(
+      to top,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone)
+    );
+  }
+  .fade-b-to-900 {
+    background-image: linear-gradient(
+      to top,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone)
+    );
+  }
+  .fade-y-in-950 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone),
+      var(--color-navy-900) calc(100% - var(--fade-zone)),
+      var(--color-navy-950)
+    );
+  }
+  .fade-y-in-900 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone),
+      var(--color-navy-950) calc(100% - var(--fade-zone)),
+      var(--color-navy-900)
+    );
+  }
+}
+
+@layer components {
+  /* --------------------------------------------------------------------------
+     Scroll reveal — subtle fade-up as elements enter the viewport (once).
+     --------------------------------------------------------------------------
+     A single IntersectionObserver (see hooks/useScrollReveal) toggles
+     `.is-visible`. The hidden base state lives INSIDE the no-preference guard,
+     so reduced-motion users always get fully-visible, un-transformed content
+     with no fades. Applied to section headings, cards, and service blocks. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition:
+        opacity 600ms ease-out,
+        transform 600ms ease-out;
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+    /* Gentle stagger for the cards within a grid/row. */
+    .reveal-stagger > *:nth-child(1) {
+      --reveal-delay: 0ms;
+    }
+    .reveal-stagger > *:nth-child(2) {
+      --reveal-delay: 80ms;
+    }
+    .reveal-stagger > *:nth-child(3) {
+      --reveal-delay: 160ms;
+    }
+    .reveal-stagger > *:nth-child(4) {
+      --reveal-delay: 240ms;
+    }
+    .reveal-stagger > *:nth-child(5) {
+      --reveal-delay: 320ms;
+    }
+    .reveal-stagger > *:nth-child(6) {
+      --reveal-delay: 400ms;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

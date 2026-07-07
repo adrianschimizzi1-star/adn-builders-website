@@ -1,6 +1,6 @@
-import { ShieldCheck, BadgeCheck, Check, ArrowRight } from "lucide-react";
+import { User, ArrowRight } from "lucide-react";
 import { business } from "../data/business";
-import { about } from "../data/about";
+import { about, team } from "../data/about";
 import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
 
@@ -60,57 +60,64 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Credentials */}
-          <dl className="mt-12 grid gap-4 sm:grid-cols-2 lg:max-w-2xl">
-            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-navy-900 p-4">
-              <ShieldCheck
-                className="mt-0.5 h-5 w-5 shrink-0 text-accent-400"
-                aria-hidden
-              />
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                  Licence
-                </dt>
-                <dd className="text-sm font-semibold text-white">
-                  {business.licenceNumber}
-                </dd>
-              </div>
+          {/* Team grid — replaces the old licence/insured badges + tick list.
+              TODO: replace placeholder members (names, descriptions, photos)
+              in src/data/about.ts. Card + image share the same rounded-2xl. */}
+          <div className="mt-14">
+            <p className="text-sm font-semibold uppercase tracking-wide text-navy-400">
+              Meet the team
+            </p>
+            <div className="reveal-stagger mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {team.map((member) => (
+                <article
+                  key={member.name}
+                  className="reveal group overflow-hidden rounded-2xl border border-white/10 bg-navy-900 transition-colors hover:border-accent-500/40"
+                >
+                  <div className="aspect-[4/5] w-full overflow-hidden bg-navy-800">
+                    {member.photo ? (
+                      <img
+                        src={member.photo}
+                        alt={member.alt}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div
+                        role="img"
+                        aria-label={member.alt}
+                        className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-navy-700 via-navy-800 to-navy-950 text-navy-300"
+                      >
+                        <User
+                          className="h-9 w-9 opacity-80"
+                          strokeWidth={1.5}
+                          aria-hidden
+                        />
+                        <span className="text-xs uppercase tracking-wide opacity-70">
+                          Photo — TODO
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-base font-bold text-white">
+                      {member.name}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-navy-300">
+                      {member.description}
+                    </p>
+                  </div>
+                </article>
+              ))}
             </div>
-            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-navy-900 p-4">
-              <BadgeCheck
-                className="mt-0.5 h-5 w-5 shrink-0 text-accent-400"
-                aria-hidden
-              />
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                  Insurance
-                </dt>
-                <dd className="text-sm font-semibold text-white">
-                  {business.fullyInsured ? "Fully insured" : "—"}
-                </dd>
-              </div>
-            </div>
-          </dl>
-
-          {/* Highlights */}
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-            {about.highlights.map((h) => (
-              <li
-                key={h}
-                className="inline-flex items-center gap-2 text-sm font-medium text-navy-100"
-              >
-                <Check className="h-4 w-4 text-accent-400" aria-hidden />
-                {h}
-              </li>
-            ))}
-          </ul>
+          </div>
         </div>
       </section>
 
       {/* How we work */}
-      <section className="bg-navy-900 py-16 sm:py-24">
+      <section className="fade-y-in-950 bg-navy-900 py-16 sm:py-24">
         <div className="container-page">
-          <div className="max-w-2xl">
+          <div className="reveal max-w-2xl">
             <p className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-accent-400">
               <span className="h-px w-6 bg-accent-500" />
               How we work
@@ -120,11 +127,11 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="reveal-stagger mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {about.process.map((step, i) => (
               <li
                 key={step.title}
-                className="rounded-xl border border-white/10 bg-navy-950 p-6"
+                className="reveal rounded-xl border border-white/10 bg-navy-950 p-6"
               >
                 <span className="text-sm font-extrabold text-accent-400">
                   {String(i + 1).padStart(2, "0")}

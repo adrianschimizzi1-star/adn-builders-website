@@ -40,7 +40,7 @@ export function Navbar() {
     >
       <nav className="container-page flex h-16 items-center justify-between">
         <Link to="/" aria-label={`${business.name} home`}>
-          <Logo />
+          <Logo className="h-11" />
         </Link>
 
         {/* Desktop */}

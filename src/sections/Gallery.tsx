@@ -16,7 +16,10 @@ export function Gallery() {
       : projects.filter((p) => p.category === filter);
 
   return (
-    <section id="gallery" className="scroll-mt-20 bg-navy-900 py-16 sm:py-24">
+    <section
+      id="gallery"
+      className="fade-y-in-950 scroll-mt-20 bg-navy-900 py-16 sm:py-24"
+    >
       <div className="container-page">
         <SectionHeading
           eyebrow="Our work"
@@ -46,7 +49,7 @@ export function Gallery() {
           })}
         </div>
 
-        <div className="mt-8">
+        <div className="reveal mt-8">
           <GalleryGrid photos={visible} onSelect={setActiveIndex} />
         </div>
 

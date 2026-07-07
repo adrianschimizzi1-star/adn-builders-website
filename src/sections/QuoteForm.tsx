@@ -89,7 +89,7 @@ export function QuoteForm({ showContactLink = false }: { showContactLink?: boole
   return (
     <section
       id="quote"
-      className="relative scroll-mt-20 overflow-hidden bg-navy-900 py-16 sm:py-24"
+      className="fade-b-to-950 relative scroll-mt-20 overflow-hidden bg-navy-900 py-16 sm:py-24"
     >
       <div className="bg-blueprint absolute inset-0 opacity-60" aria-hidden />
       <div className="container-page relative grid gap-12 lg:grid-cols-2">

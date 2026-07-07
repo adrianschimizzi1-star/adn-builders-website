@@ -16,6 +16,58 @@ export interface ProcessStep {
   description: string;
 }
 
+export interface TeamMember {
+  name: string;
+  /** One-to-two line description shown under the name. */
+  description: string;
+  /**
+   * Portrait photo. Drop the file in /public/team and set the path here.
+   * Leave undefined to show a styled placeholder until the real photo exists.
+   */
+  photo?: string;
+  alt: string;
+}
+
+/**
+ * The team grid on the /about page.
+ *
+ * TODO: replace — the owner will supply four real team members (names,
+ * one-to-two line descriptions, and portrait photos). Photos look best as a
+ * consistent 4:5 portrait; drop them in /public/team and set each `photo`
+ * (undefined renders a placeholder meanwhile). Names/descriptions below are
+ * placeholders wrapped in NEEDS_INPUT so they're easy to find.
+ */
+export const team: TeamMember[] = [
+  {
+    name: NEEDS_INPUT("Team member one"),
+    description: NEEDS_INPUT(
+      "Role / title — one to two lines on what they do and the experience they bring.",
+    ),
+    alt: "Portrait of an ADN Builders team member",
+  },
+  {
+    name: NEEDS_INPUT("Team member two"),
+    description: NEEDS_INPUT(
+      "Role / title — one to two lines on what they do and the experience they bring.",
+    ),
+    alt: "Portrait of an ADN Builders team member",
+  },
+  {
+    name: NEEDS_INPUT("Team member three"),
+    description: NEEDS_INPUT(
+      "Role / title — one to two lines on what they do and the experience they bring.",
+    ),
+    alt: "Portrait of an ADN Builders team member",
+  },
+  {
+    name: NEEDS_INPUT("Team member four"),
+    description: NEEDS_INPUT(
+      "Role / title — one to two lines on what they do and the experience they bring.",
+    ),
+    alt: "Portrait of an ADN Builders team member",
+  },
+];
+
 export const about = {
   /** Confirm the real names. */
   builders: NEEDS_INPUT("Anthony & Nato"),
@@ -28,7 +80,7 @@ export const about = {
 
   /** Expanded bio — used on the /about detail page (draft; confirm with client). */
   longBio: [
-    "ADN Builders is a local, family-run building team that has been working across Canberra and the surrounding ACT for more than 25 years. What started as a small operation has grown on the back of referrals and repeat clients — the kind of reputation you only earn by turning up, doing the work properly, and standing behind it.",
+    "ADN Builders is a local, family-run building team that has been working across Canberra and the Capital Region for more than 25 years. What started as a small operation has grown on the back of referrals and repeat clients — the kind of reputation you only earn by turning up, doing the work properly, and standing behind it.",
     "We keep our projects deliberately hands-on. You deal directly with the builders, not a call centre, so decisions are made quickly and nothing gets lost between trades. From renovations and extensions to complete new homes, bathrooms, and outdoor spaces, we manage the whole job and coordinate every trade so you have a single point of responsibility.",
     "We're fully licensed and insured, and we hold ourselves to the standard we'd want in our own homes. Honest quotes, clear timelines, tidy sites, and workmanship built to last — that's the whole promise.",
   ],
