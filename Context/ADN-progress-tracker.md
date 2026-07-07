@@ -159,7 +159,7 @@ the whole site re-checked in a headless browser.
       **"Canberra & the Capital Region"** (exact string; renders in Hero,
       QuoteForm, Footer). Grepped for variants — the only other instance
       was the About `longBio` prose ("Canberra and the surrounding ACT"),
-      updated to "Canberra and the Capital Region" (kept "and" for prose).
+      updated to the canonical **"Canberra & the Capital Region"** too.
       Zero "surrounding"/old-tagline instances remain.
 - [x] **Step 3 — Hero overlay.** Lightened both legibility overlays in
       `Hero.tsx` ~20% (e.g. horizontal `950 → 950/90 · 850/65 → …/25`),

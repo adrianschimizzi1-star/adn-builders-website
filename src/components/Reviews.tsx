@@ -87,17 +87,21 @@ export function Reviews({
           </p>
         )}
 
-        <div className="mt-8">
-          <Button
-            href={googleReviewsUrl || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="outline"
-          >
-            Read more on Google
-            <ArrowRight className="h-4 w-4" aria-hidden />
-          </Button>
-        </div>
+        {/* Shown once the owner supplies the Google reviews URL — no dead
+            "#" link / blank tab while it's still a TODO. */}
+        {googleReviewsUrl && (
+          <div className="mt-8">
+            <Button
+              href={googleReviewsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="outline"
+            >
+              Read more on Google
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );

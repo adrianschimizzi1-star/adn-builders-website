@@ -6,8 +6,9 @@ import { ProjectImage } from "./ProjectImage";
 
 export function ServiceCard({ service }: { service: Service }) {
   const Icon = service.icon;
-  // Representative project for this service's category — used as the clickable
-  // "service image". Falls back to the styled placeholder until photos exist.
+  // Representative project for this service's category, used as the clickable
+  // "service image". ProjectImage shows a styled placeholder until a photo file
+  // is set; if a category has no projects at all, the image is omitted.
   const cover = projects.find((p) => p.category === service.category);
 
   return (
