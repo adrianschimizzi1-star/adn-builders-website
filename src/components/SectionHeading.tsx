@@ -12,7 +12,7 @@ export function SectionHeading({
   center?: boolean;
 }) {
   return (
-    <div className={`${center ? "mx-auto text-center" : ""} max-w-2xl`}>
+    <div className={`reveal ${center ? "mx-auto text-center" : ""} max-w-2xl`}>
       {eyebrow && (
         <p className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-accent-400">
           {!center && <span className="h-px w-6 bg-accent-500" />}

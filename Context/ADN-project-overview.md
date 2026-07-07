@@ -2,12 +2,14 @@
 
 ## Overview
 
-A professional single-page marketing website for [Business Name],
-a residential builder serving [suburb/region]. The site showcases
-past project work, builds trust through licence and experience
-details, and converts visitors into enquiries via a quote form
-and click-to-call phone links. It is a static site with no user
-accounts and no database.
+A professional marketing website for [Business Name], a
+residential builder serving [suburb/region]. Home is a complete
+one-page overview; each major section also has a dedicated detail
+page (Services, Projects/Gallery, About, Contact) with expanded
+content. The site showcases past project work, builds trust
+through licence and experience details, and converts visitors
+into enquiries via a quote form and click-to-call phone links.
+It is a static SPA with no user accounts and no database.
 
 ## Goals
 
@@ -59,19 +61,24 @@ accounts and no database.
 
 ### In Scope
 
-- Single-page responsive site (mobile-first)
-- Formspree-powered enquiry form (no backend)
+- Responsive site, mobile-first: a full one-page Home overview
+  plus dedicated detail pages (Services, Gallery, About, Contact)
+- Client-side routing (react-router-dom) with a Vercel SPA
+  rewrite so deep links survive a hard refresh
+- Formspree-powered enquiry form (no backend), reused on Home
+  and the Contact page
 - Image optimization for gallery photos
-- Local SEO basics: title, meta description, heading
-  structure, image alt text, Open Graph tags
+- Local SEO basics: per-page title + meta description, one `<h1>`
+  per page, heading structure, image alt text, Open Graph tags
 
 ### Out of Scope
 
 - User accounts, logins, or admin panel
-- CMS or database of any kind
+- CMS or database of any kind (detail-page content is typed
+  data in `src/data/`)
 - Blog
 - Online payments or booking calendar
-- Multi-page routing (single page with anchor links only)
+- Server-side rendering (the site stays a static SPA)
 
 ## Success Criteria
 

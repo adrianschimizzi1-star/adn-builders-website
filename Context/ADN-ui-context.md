@@ -2,38 +2,52 @@
 
 ## Theme
 
-Dark premium, on-brand to the ADN Builders logo — a deep navy
-canvas with warm orange accents. Modern and trustworthy: the
+Dark premium, on-brand to the ADN Builders logo — a **charcoal
+blue-grey** canvas (gunmetal, close to black with a subtle cool
+blue cast) with warm orange accents. Modern and trustworthy: the
 visual language of an established trade business. Large project
-photography sits on dark surfaces so the work glows; restrained
-use of the orange accent keeps calls to action obvious. Nothing
+photography sits on the darker surfaces so the work glows;
+restrained use of the orange accent keeps calls to action
+obvious — and pops harder now that the canvas is darker. Nothing
 flashy, nothing that reads as a template.
 
-> Updated 2026-07-07 — changed from the original "light mode
-> only" brief to this dark premium theme at the client's request.
+> Updated 2026-07-07 — retheme (spec 03): shifted the canvas from
+> a saturated deep navy to a darker, desaturated charcoal
+> blue-grey. Token names are unchanged (`navy-*`); only their hex
+> values changed. Every text/background pair re-verified WCAG AA.
+> Earlier that day: changed from the original "light mode only"
+> brief to this dark premium theme at the client's request.
 
 ## Colors
 
-Palette is extracted from the logo: **navy** (the "ADN"
-wordmark) as the dark canvas/neutrals, **orange** (the
-"BUILDERS" wordmark) as the accent. Tokens are defined in the
-Tailwind v4 `@theme` block in `src/index.css` — components use
-them by class (e.g. `bg-navy-950`, `text-accent-500`); no
-hardcoded hex values in components.
+**Charcoal blue-grey** ramp (`navy-*`, a desaturated cool grey —
+the token name is kept from the original navy for continuity)
+as the dark canvas/neutrals; **orange** (the logo's "BUILDERS"
+wordmark) as the accent. Tokens are defined in the Tailwind v4
+`@theme` block in `src/index.css` — components use them by class
+(e.g. `bg-navy-950`, `text-accent-500`); no hardcoded hex values
+in components. The `navy-*` values below match `src/index.css`
+exactly.
 
 | Role              | Token / class     | Value      |
 | ----------------- | ----------------- | ---------- |
-| Page background   | `bg-navy-950`     | `#080c22`  |
-| Alternate section | `bg-navy-900`     | `#101736`  |
-| Card / elevated   | `bg-navy-800`     | `#182146`  |
+| Page background   | `bg-navy-950`     | `#0b0e13`  |
+| Alternate section | `bg-navy-900`     | `#131720`  |
+| Card / elevated   | `bg-navy-800`     | `#1a2029`  |
 | Primary text      | `text-white`      | `#ffffff`  |
-| Body text         | `text-navy-200`   | `#c2cbe7`  |
-| Muted text        | `text-navy-300/400`| `#97a5d3` / `#6577b0` |
+| Body text         | `text-navy-200`   | `#c6cdd9`  |
+| Muted text        | `text-navy-300/400`| `#9aa3b2` / `#808a9a` |
+| Fine print        | `text-navy-400/500`| `#808a9a` (dark bg) / `#656f7f` (light card) |
 | Primary accent    | `accent-500`      | `#e8791f`  |
 | Accent hover      | `accent-400/600`  | `#ee8636` / `#cf6413` |
-| Border            | `border-white/10` | 10% white  |
+| Border            | `border-white/10` (or `navy-700`) | 10% white / `#232b37` |
 | Error             | `state-error`     | `#f87171`  |
 | Success           | `state-success`   | `#34d399`  |
+
+Full `navy-*` ramp (light → dark): `50 #f2f4f7` · `100 #e3e7ed`
+· `200 #c6cdd9` · `300 #9aa3b2` · `400 #808a9a` · `500 #656f7f`
+· `600 #48515f` · `700 #232b37` · `800 #1a2029` · `900 #131720`
+· `950 #0b0e13`.
 
 Usage rules:
 
@@ -42,8 +56,18 @@ Usage rules:
   if everything is accented, nothing is
 - Alternate `bg-navy-950` and `bg-navy-900` between sections to
   create rhythm without borders
-- On dark backgrounds the full-colour logo sits on a small white
-  plate (`components/Logo.tsx`) so the navy wordmark stays legible
+- The quote form is a deliberate **white** card on the dark page;
+  its text (`navy-800/900`) and validation reds (`red-500/600/700`)
+  are Tailwind defaults chosen for contrast on white — the
+  `state-error` token is a light red for dark surfaces and must
+  NOT be used as text on the white card
+- Contrast floor: every text/background pair meets WCAG AA
+  (≥4.5:1 normal text). Muted text bottoms out at `navy-300`
+  (≈7.6:1); `navy-400/500` are for fine print only, and the token
+  is picked per background so both directions stay ≥4.5:1
+- The logo PNG has a transparent background; its banner +
+  white "ADN" + orange "BUILDERS" read directly on the dark theme,
+  so it sits with no plate (`components/Logo.tsx`)
 
 ## Typography
 

@@ -2,11 +2,19 @@
 
 /*
   ============================================================================
-   ADN BUILDERS — THEME TOKENS  (dark premium, on-brand to the logo)
+   ADN BUILDERS — THEME TOKENS  (charcoal blue-grey, on-brand to the logo)
   ============================================================================
-   Palette is derived from the ADN Builders logo:
-     • navy  — the deep blue of the "ADN" wordmark (structure / dark canvas)
-     • accent (orange) — the "BUILDERS" orange (calls to action + highlights)
+   Theme: a darker, desaturated charcoal / gunmetal canvas with a subtle cool
+   blue cast — closer to black than the original deep navy — so project
+   photography glows and the orange CTAs are unmistakably the most prominent
+   thing on the page.
+
+   Palette roles:
+     • navy-*  — the charcoal blue-grey ramp (dark canvas → light neutrals/text).
+                 The token name is kept for continuity; the hue is now a
+                 desaturated cool grey, not saturated navy.
+     • accent (orange) — the "BUILDERS" orange from the logo (calls to action
+                 + highlights only). Pops harder on the darker canvas.
 
    Components reference these tokens by class (e.g. bg-navy-950, text-accent-500)
    — no hardcoded hex values in components.
@@ -16,18 +24,20 @@
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-heading: var(--font-sans);
 
-  /* Brand navy — dark canvas + neutrals */
-  --color-navy-50: #f1f3fa;
-  --color-navy-100: #e1e6f4;
-  --color-navy-200: #c2cbe7;
-  --color-navy-300: #97a5d3;
-  --color-navy-400: #6577b0;
-  --color-navy-500: #43548c;
-  --color-navy-600: #2f3e6f;
-  --color-navy-700: #232f5a;
-  --color-navy-800: #182146;
-  --color-navy-900: #101736;
-  --color-navy-950: #080c22;
+  /* Charcoal blue-grey — dark canvas + cool neutrals/text.
+     950/900/800 = base / surface / elevated; 700 = default border;
+     300 = muted text, 200 = body text, 50 = near-white primary text. */
+  --color-navy-50: #f2f4f7;
+  --color-navy-100: #e3e7ed;
+  --color-navy-200: #c6cdd9;
+  --color-navy-300: #9aa3b2;
+  --color-navy-400: #808a9a;
+  --color-navy-500: #656f7f;
+  --color-navy-600: #48515f;
+  --color-navy-700: #232b37;
+  --color-navy-800: #1a2029;
+  --color-navy-900: #131720;
+  --color-navy-950: #0b0e13;
 
   /* Accent orange — CTAs + highlights */
   --color-accent-50: #fdf3ea;
@@ -81,6 +91,114 @@
       linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 34px 34px;
+  }
+
+  /* --------------------------------------------------------------------------
+     Soft section boundaries
+     --------------------------------------------------------------------------
+     The site alternates two dark shades (navy-950 base / navy-900 surface).
+     Rather than hard-cut at each shade change, the entering (or leaving)
+     section paints an ~80px gradient at that edge that eases the adjacent
+     shade into its own. Purely a background treatment on the <section> — it
+     never overlaps content, so no z-index juggling is needed. The gradient's
+     final stop holds, so the rest of the section stays its own solid shade.
+     Naming: `fade-t-from-X` = leading edge eases down from shade X;
+             `fade-b-to-X`   = trailing edge eases up into shade X;
+             `fade-y-in-X`   = both edges ease from/into shade X (body is the
+                               opposite shade), for a section flanked on both
+                               sides by shade X. */
+  :root {
+    --fade-zone: 5rem; /* ~80px, within the 60–100px the spec asks for */
+  }
+
+  .fade-t-from-950 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone)
+    );
+  }
+  .fade-t-from-900 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone)
+    );
+  }
+  .fade-b-to-950 {
+    background-image: linear-gradient(
+      to top,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone)
+    );
+  }
+  .fade-b-to-900 {
+    background-image: linear-gradient(
+      to top,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone)
+    );
+  }
+  .fade-y-in-950 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-950),
+      var(--color-navy-900) var(--fade-zone),
+      var(--color-navy-900) calc(100% - var(--fade-zone)),
+      var(--color-navy-950)
+    );
+  }
+  .fade-y-in-900 {
+    background-image: linear-gradient(
+      to bottom,
+      var(--color-navy-900),
+      var(--color-navy-950) var(--fade-zone),
+      var(--color-navy-950) calc(100% - var(--fade-zone)),
+      var(--color-navy-900)
+    );
+  }
+}
+
+@layer components {
+  /* --------------------------------------------------------------------------
+     Scroll reveal — subtle fade-up as elements enter the viewport (once).
+     --------------------------------------------------------------------------
+     A single IntersectionObserver (see hooks/useScrollReveal) toggles
+     `.is-visible`. The hidden base state lives INSIDE the no-preference guard,
+     so reduced-motion users always get fully-visible, un-transformed content
+     with no fades. Applied to section headings, cards, and service blocks. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition:
+        opacity 600ms ease-out,
+        transform 600ms ease-out;
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+    /* Gentle stagger for the cards within a grid/row. */
+    .reveal-stagger > *:nth-child(1) {
+      --reveal-delay: 0ms;
+    }
+    .reveal-stagger > *:nth-child(2) {
+      --reveal-delay: 80ms;
+    }
+    .reveal-stagger > *:nth-child(3) {
+      --reveal-delay: 160ms;
+    }
+    .reveal-stagger > *:nth-child(4) {
+      --reveal-delay: 240ms;
+    }
+    .reveal-stagger > *:nth-child(5) {
+      --reveal-delay: 320ms;
+    }
+    .reveal-stagger > *:nth-child(6) {
+      --reveal-delay: 400ms;
+    }
   }
 }
 

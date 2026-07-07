@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Phone, Mail, MapPin, CheckCircle2, ArrowRight } from "lucide-react";
 import {
   business,
   telHref,
@@ -32,7 +33,11 @@ function validate(data: Record<string, string>): Errors {
   return errors;
 }
 
-export function QuoteForm() {
+/**
+ * The quote form section. Reused as-is on the /contact page; on the home page
+ * it shows a "Get in touch →" link through to the full contact page.
+ */
+export function QuoteForm({ showContactLink = false }: { showContactLink?: boolean } = {}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
@@ -84,7 +89,7 @@ export function QuoteForm() {
   return (
     <section
       id="quote"
-      className="relative scroll-mt-20 overflow-hidden bg-navy-900 py-16 sm:py-24"
+      className="fade-b-to-950 relative scroll-mt-20 overflow-hidden bg-navy-900 py-16 sm:py-24"
     >
       <div className="bg-blueprint absolute inset-0 opacity-60" aria-hidden />
       <div className="container-page relative grid gap-12 lg:grid-cols-2">
@@ -132,6 +137,16 @@ export function QuoteForm() {
               <span className="font-medium">{business.serviceArea}</span>
             </li>
           </ul>
+
+          {showContactLink && (
+            <Link
+              to="/contact"
+              className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
+            >
+              Get in touch
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          )}
         </div>
 
         {/* Form card */}
@@ -229,7 +244,7 @@ export function QuoteForm() {
               >
                 {status === "submitting" ? "Sending…" : "Send enquiry"}
               </Button>
-              <p className="text-center text-xs text-navy-400">
+              <p className="text-center text-xs text-navy-500">
                 We'll only use your details to respond to your enquiry.
               </p>
             </form>

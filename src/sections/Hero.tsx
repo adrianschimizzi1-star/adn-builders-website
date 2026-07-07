@@ -26,9 +26,11 @@ export function Hero() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-navy-800 via-navy-950 to-black" />
       )}
 
-      {/* Legibility overlays (guarantee text contrast over any photo) */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950 via-navy-950/85 to-navy-950/45" />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950 via-navy-950/20 to-navy-950/75" />
+      {/* Legibility overlays — kept just dark enough behind the (left/bottom)
+          text for AA contrast, but ~20% lighter than before so the photo reads
+          clearly, especially through the centre and right where there's no copy. */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-950/90 via-navy-950/65 to-navy-950/25" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950/85 via-navy-950/10 to-navy-950/55" />
       {/* Warm accent glow */}
       <div
         className="pointer-events-none absolute -right-20 top-10 -z-10 h-[28rem] w-[28rem] rounded-full bg-accent-500/15 blur-3xl"

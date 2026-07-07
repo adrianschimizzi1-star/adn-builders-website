@@ -30,9 +30,9 @@
 
 - Tailwind utility classes only — no separate CSS files
   except the Tailwind entry point
-- Colors come from the palette tokens defined in
-  `tailwind.config` per `ui-context.md` — no hardcoded
-  hex values inside components
+- Colors come from the palette tokens defined in the
+  Tailwind v4 `@theme` block in `src/index.css` per
+  `ui-context.md` — no hardcoded hex values inside components
 - Mobile-first: write base styles for small screens,
   layer `md:` / `lg:` variants on top
 - Follow the border radius and spacing scale defined
