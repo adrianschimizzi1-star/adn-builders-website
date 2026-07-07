@@ -40,7 +40,7 @@ export const business: BusinessInfo = {
   email: "adnbuilders1@gmail.com",
 
   // --- Credentials ---
-  licenceNumber: NEEDS_INPUT("ACT Builder Licence #000000"),
+  licenceNumber: "ACT Builder Licence #20181053",
   fullyInsured: true,
 
   // --- Opening hours (confirm with client) ---

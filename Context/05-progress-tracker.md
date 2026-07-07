@@ -142,7 +142,7 @@ repo's `Context/ADN-*.md` files.
 
 Search `src/data/` for `NEEDS_INPUT` to find these in code.
 
-- [ ] **Licence number** — `business.ts` (`ACT Builder Licence #000000`)
+- [x] **Licence number** — `business.ts` → `ACT Builder Licence #20181053`
 - [ ] **Formspree form ID** — `business.ts` (`FORMSPREE_ID`); form
       shows a clear "not connected yet" error until set
 - [ ] **Builder names + bio** — `about.ts` (`builders`, `bio`,
