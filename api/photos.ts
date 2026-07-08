@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { isAuthed } from "./_lib/auth";
+import { isAuthed } from "./_lib/auth.js";
 import {
   readManifest,
   writeManifest,
@@ -8,7 +8,7 @@ import {
   PHOTO_CATEGORIES,
   type PhotoCategory,
   type PhotoEntry,
-} from "./_lib/store";
+} from "./_lib/store.js";
 
 // Guard against oversized payloads. Client-side resize keeps real uploads far
 // below this (and below Vercel's ~4.5MB request-body limit).

@@ -1,4 +1,8 @@
-import crypto from "node:crypto";
+// Namespace import (not `import crypto from …`): the default import of a Node
+// builtin resolves under `vercel dev` but bundles to `undefined` in the
+// production build, which crashed every crypto call. Namespace import is stable
+// in both.
+import * as crypto from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 /*
