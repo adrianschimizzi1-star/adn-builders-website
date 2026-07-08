@@ -17,10 +17,17 @@ Gallery (and the Services page strips) automatically — no code change or redep
 
 ## One-time Vercel setup (required before it works)
 
-1. **Create a Blob store** and connect it to this project
-   Vercel dashboard → your project → **Storage** → **Create Database** → **Blob**
-   → connect it to the project. This automatically adds the
-   `BLOB_READ_WRITE_TOKEN` environment variable.
+1. **Create a _public_ Blob store** and connect it to this project
+   The gallery serves permanent public image URLs, so the store **must be
+   Public** — a Private store rejects the uploads with "Cannot use public
+   access on a private store". Access mode is fixed at creation and can't be
+   changed later. Either:
+   - Dashboard → **Storage** → **Create** → **Blob** → set access to **Public**
+     → connect to the project, or
+   - CLI: `npx vercel blob create-store <name> --access public --yes \
+       --environment production --environment preview --environment development`
+
+   Connecting adds the `BLOB_READ_WRITE_TOKEN` env var (which embeds the store).
 
 2. **Add two environment variables**
    Project → **Settings** → **Environment Variables** (add to Production, Preview,
