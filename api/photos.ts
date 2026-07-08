@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { isAuthed } from "./_lib/auth.js";
 import {
-  readManifest,
-  writeManifest,
+  listPhotos,
+  readPhoto,
+  writePhoto,
   putImage,
-  deleteImage,
+  deletePhotoBlobs,
   PHOTO_CATEGORIES,
   type PhotoCategory,
   type PhotoEntry,
@@ -28,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // ---- Public read: the live gallery list ------------------------------
     if (req.method === "GET") {
-      const photos = await readManifest();
+      const photos = await listPhotos();
       res.setHeader(
         "Cache-Control",
         "public, s-maxage=30, stale-while-revalidate=300",
@@ -82,35 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         pathname,
         createdAt: Date.now(),
       };
-
-      const entries = await readManifest();
-      entries.unshift(entry);
-      await writeManifest(entries);
+      await writePhoto(entry);
       return res.status(201).json({ photo: entry });
-    }
-
-    if (req.method === "DELETE") {
-      const id =
-        typeof req.query.id === "string"
-          ? req.query.id
-          : typeof req.body?.id === "string"
-            ? req.body.id
-            : "";
-      if (!id) return res.status(400).json({ error: "Missing id" });
-
-      const entries = await readManifest();
-      const entry = entries.find((e) => e.id === id);
-      if (!entry) return res.status(404).json({ error: "Photo not found" });
-
-      // Remove the image first, then the manifest record. If the image delete
-      // fails we still drop the record so it disappears from the gallery.
-      try {
-        await deleteImage(entry.url);
-      } catch {
-        /* best-effort */
-      }
-      await writeManifest(entries.filter((e) => e.id !== id));
-      return res.status(200).json({ ok: true });
     }
 
     if (req.method === "PATCH") {
@@ -126,14 +100,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: "Invalid category" });
       }
 
-      const entries = await readManifest();
-      const idx = entries.findIndex((e) => e.id === id);
-      if (idx === -1) return res.status(404).json({ error: "Photo not found" });
+      const existing = await readPhoto(id);
+      if (!existing) return res.status(404).json({ error: "Photo not found" });
 
       // Metadata-only edit — the stored image (url/pathname) is untouched.
-      entries[idx] = { ...entries[idx], title, category, alt: alt || title };
-      await writeManifest(entries);
-      return res.status(200).json({ photo: entries[idx] });
+      const updated: PhotoEntry = { ...existing, title, category, alt: alt || title };
+      await writePhoto(updated);
+      return res.status(200).json({ photo: updated });
+    }
+
+    if (req.method === "DELETE") {
+      const id =
+        typeof req.query.id === "string"
+          ? req.query.id
+          : typeof req.body?.id === "string"
+            ? req.body.id
+            : "";
+      if (!id) return res.status(400).json({ error: "Missing id" });
+
+      const existing = await readPhoto(id);
+      if (!existing) return res.status(404).json({ error: "Photo not found" });
+
+      await deletePhotoBlobs(existing);
+      return res.status(200).json({ ok: true });
     }
 
     res.setHeader("Allow", "GET, POST, PATCH, DELETE");

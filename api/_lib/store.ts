@@ -1,13 +1,15 @@
 import { list, put, del } from "@vercel/blob";
 
 /*
- * Photo storage. Images live as public blobs under `projects/` in Vercel Blob;
- * their metadata (title, category, alt) lives in a single JSON manifest blob.
- * The site (and admin) read the manifest to render the gallery.
+ * Photo storage — one image blob plus one metadata "sidecar" JSON blob per
+ * photo, both under `projects/` (e.g. `projects/<id>.jpg` + `projects/<id>.json`).
  *
- * Concurrency note: writes are read-modify-write on one manifest. That's safe
- * for a single admin editing sequentially (the intended use); it is not built
- * for many simultaneous writers.
+ * There is deliberately NO shared manifest file. A single mutable JSON manifest
+ * can't be safely read-modify-written on Vercel Blob: the store is eventually
+ * consistent, so a read taken right after a write can still return the old
+ * value, and the next write then drops entries. With independent per-photo
+ * sidecars, adding/editing/deleting one photo never touches another, so entries
+ * can't be lost. Listing simply reads every sidecar.
  */
 
 export type PhotoCategory =
@@ -29,36 +31,41 @@ export interface PhotoEntry {
   category: PhotoCategory;
   alt: string;
   url: string; // public CDN url of the image blob
-  pathname: string; // blob pathname (kept for deletion)
+  pathname: string; // image blob pathname
   createdAt: number;
 }
 
-const MANIFEST_PATH = "projects/manifest.json";
+const PREFIX = "projects/";
+const sidecarPath = (id: string): string => `${PREFIX}${id}.json`;
 
-/** Reads the manifest blob; returns [] when it doesn't exist yet. */
-export async function readManifest(): Promise<PhotoEntry[]> {
-  const { blobs } = await list({ prefix: MANIFEST_PATH, limit: 1 });
-  const found = blobs.find((b) => b.pathname === MANIFEST_PATH);
-  if (!found) return [];
-  const res = await fetch(found.url, { cache: "no-store" });
-  if (!res.ok) return [];
+/** Fetches + parses one metadata sidecar (cache-busted for freshness). */
+async function fetchSidecar(url: string): Promise<PhotoEntry | null> {
   try {
-    const data = await res.json();
-    return Array.isArray(data) ? (data as PhotoEntry[]) : [];
+    const res = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as PhotoEntry;
+    return data && typeof data.id === "string" ? data : null;
   } catch {
-    return [];
+    return null;
   }
 }
 
-/** Overwrites the manifest blob (no CDN caching so reads are always fresh). */
-export async function writeManifest(entries: PhotoEntry[]): Promise<void> {
-  await put(MANIFEST_PATH, JSON.stringify(entries), {
-    access: "public",
-    contentType: "application/json",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 0,
-  });
+/** All photos, newest first, read from every sidecar under projects/. */
+export async function listPhotos(): Promise<PhotoEntry[]> {
+  const { blobs } = await list({ prefix: PREFIX });
+  const sidecars = blobs.filter((b) => b.pathname.endsWith(".json"));
+  const entries = await Promise.all(sidecars.map((b) => fetchSidecar(b.url)));
+  return entries
+    .filter((e): e is PhotoEntry => e !== null)
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/** Reads a single photo's sidecar by id (null if missing). */
+export async function readPhoto(id: string): Promise<PhotoEntry | null> {
+  const path = sidecarPath(id);
+  const { blobs } = await list({ prefix: path, limit: 1 });
+  const found = blobs.find((b) => b.pathname === path);
+  return found ? fetchSidecar(found.url) : null;
 }
 
 /** Stores an image buffer as a public blob, returning its url + pathname. */
@@ -76,7 +83,18 @@ export async function putImage(
   return { url: blob.url, pathname: blob.pathname };
 }
 
-/** Removes an image blob by its public url (best-effort). */
-export async function deleteImage(url: string): Promise<void> {
-  await del(url);
+/** Creates or overwrites one photo's metadata sidecar. */
+export async function writePhoto(entry: PhotoEntry): Promise<void> {
+  await put(sidecarPath(entry.id), JSON.stringify(entry), {
+    access: "public",
+    contentType: "application/json",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    cacheControlMaxAge: 0,
+  });
+}
+
+/** Deletes a photo's image + sidecar blobs (best-effort). */
+export async function deletePhotoBlobs(entry: PhotoEntry): Promise<void> {
+  await Promise.allSettled([del(entry.url), del(sidecarPath(entry.id))]);
 }
