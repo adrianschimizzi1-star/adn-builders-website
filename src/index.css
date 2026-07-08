@@ -161,6 +161,33 @@
 
 @layer components {
   /* --------------------------------------------------------------------------
+     Page entrance — the whole routed page fades up as ONE cohesive motion on
+     each navigation (see Layout: a pathname-keyed wrapper replays it per route).
+     Deliberately a single page-level animation rather than per-element reveals,
+     so pages open as one smooth rise instead of separate pieces cutting in.
+     `backwards` fill shows the pre-animation (hidden) state on the first frame
+     so there's no flash; no `forwards` fill, so after it finishes the wrapper
+     carries no transform (keeps fixed-position overlays like the lightbox sane).
+     Gated on no-preference so reduced-motion users get a static, instant page. */
+  @media (prefers-reduced-motion: no-preference) {
+    .page-enter {
+      animation: page-enter 600ms ease-out backwards;
+    }
+  }
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer components {
+  /* --------------------------------------------------------------------------
      Scroll reveal — subtle fade-up as elements enter the viewport (once).
      --------------------------------------------------------------------------
      A single IntersectionObserver (see hooks/useScrollReveal) toggles
