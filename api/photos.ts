@@ -113,7 +113,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ ok: true });
     }
 
-    res.setHeader("Allow", "GET, POST, DELETE");
+    if (req.method === "PATCH") {
+      const body = req.body ?? {};
+      const id = typeof body.id === "string" ? body.id : "";
+      const title = typeof body.title === "string" ? body.title.trim() : "";
+      const category = body.category as PhotoCategory;
+      const alt = typeof body.alt === "string" ? body.alt.trim() : "";
+
+      if (!id) return res.status(400).json({ error: "Missing id" });
+      if (!title) return res.status(400).json({ error: "Missing title" });
+      if (!PHOTO_CATEGORIES.includes(category)) {
+        return res.status(400).json({ error: "Invalid category" });
+      }
+
+      const entries = await readManifest();
+      const idx = entries.findIndex((e) => e.id === id);
+      if (idx === -1) return res.status(404).json({ error: "Photo not found" });
+
+      // Metadata-only edit — the stored image (url/pathname) is untouched.
+      entries[idx] = { ...entries[idx], title, category, alt: alt || title };
+      await writeManifest(entries);
+      return res.status(200).json({ photo: entries[idx] });
+    }
+
+    res.setHeader("Allow", "GET, POST, PATCH, DELETE");
     return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
     console.error("photos handler error:", err);

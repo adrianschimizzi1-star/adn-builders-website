@@ -74,6 +74,17 @@ export async function uploadPhoto(input: {
   return photo;
 }
 
+export async function updatePhoto(
+  id: string,
+  input: { title: string; category: PhotoCategory; alt: string },
+): Promise<ServerPhoto> {
+  const { photo } = await jsonFetch<{ photo: ServerPhoto }>("/api/photos", {
+    method: "PATCH",
+    body: JSON.stringify({ id, ...input }),
+  });
+  return photo;
+}
+
 export async function deletePhoto(id: string): Promise<void> {
   await jsonFetch(`/api/photos?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
