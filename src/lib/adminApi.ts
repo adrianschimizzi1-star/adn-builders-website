@@ -55,8 +55,14 @@ export async function checkSession(): Promise<boolean> {
   }
 }
 
-export async function listPhotos(): Promise<ServerPhoto[]> {
-  const { photos } = await jsonFetch<{ photos: ServerPhoto[] }>("/api/photos");
+/**
+ * Lists photos. Pass `fresh` in the admin to bypass the ~30s edge cache so a
+ * refresh right after an add/edit/delete reflects the true server state; the
+ * public gallery omits it and keeps the cache for speed.
+ */
+export async function listPhotos(fresh = false): Promise<ServerPhoto[]> {
+  const url = fresh ? `/api/photos?t=${Date.now()}` : "/api/photos";
+  const { photos } = await jsonFetch<{ photos: ServerPhoto[] }>(url);
   return Array.isArray(photos) ? photos : [];
 }
 

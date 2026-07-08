@@ -122,7 +122,8 @@ export default function AdminPage() {
   const loadPhotos = useCallback(async () => {
     setLoadingPhotos(true);
     try {
-      setExisting(await listPhotos());
+      // `fresh` bypasses the edge cache so the admin always shows true state.
+      setExisting(await listPhotos(true));
     } catch {
       /* leave the list as-is */
     } finally {
