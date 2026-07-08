@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ArrowRight } from "lucide-react";
 import { services } from "../data/services";
-import { projects, type GalleryPhoto } from "../data/gallery";
+import { type GalleryPhoto } from "../data/gallery";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
 import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { usePhotos } from "../hooks/usePhotos";
 
 export default function ServicesPage() {
   usePageMeta(
@@ -18,6 +19,9 @@ export default function ServicesPage() {
   const [lb, setLb] = useState<{ items: GalleryPhoto[]; index: number } | null>(
     null,
   );
+
+  // Live photos from the admin/Blob backend (falls back to the static seed).
+  const { photos } = usePhotos();
 
   return (
     <>
@@ -42,7 +46,7 @@ export default function ServicesPage() {
       {/* Per-service detail blocks */}
       {services.map((service, i) => {
         const Icon = service.icon;
-        const related = projects.filter((p) => p.category === service.category);
+        const related = photos.filter((p) => p.category === service.category);
         // Soft boundary blend. Blocks alternate navy-950 / navy-900; the header
         // above is navy-950 and the footer below is navy-950, so:
         //   • block 0 (navy-950) only needs to ease its bottom into block 1;

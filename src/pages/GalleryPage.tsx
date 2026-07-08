@@ -1,13 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  projects,
-  galleryFilters,
-  type GalleryCategory,
-} from "../data/gallery";
+import { galleryFilters, type GalleryCategory } from "../data/gallery";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { usePhotos } from "../hooks/usePhotos";
 
 /** Coerce a `?cat=` value to a known filter id, falling back to "all". */
 function toCategory(value: string | null): GalleryCategory {
@@ -32,14 +29,15 @@ export default function GalleryPage() {
   );
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  // Live photos from the admin/Blob backend (falls back to the static seed).
+  const { photos } = usePhotos();
+
   useEffect(() => {
     setFilter(toCategory(catParam));
   }, [catParam]);
 
   const visible =
-    filter === "all"
-      ? projects
-      : projects.filter((p) => p.category === filter);
+    filter === "all" ? photos : photos.filter((p) => p.category === filter);
 
   return (
     <>

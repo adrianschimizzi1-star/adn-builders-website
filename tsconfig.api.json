@@ -1,0 +1,17 @@
+{
+  "//": "Type-checks the Vercel serverless functions in /api. Not part of the site build (`npm run build`); Vercel compiles these itself. Run: npx tsc -p tsconfig.api.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": ["api"]
+}

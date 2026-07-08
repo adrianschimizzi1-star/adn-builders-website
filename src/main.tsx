@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense, lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./pages/Layout";
@@ -12,6 +12,10 @@ import MobilePreview from "./pages/MobilePreview";
 import { ScrollToTop } from "./components/ScrollToTop";
 import "./index.css";
 
+// Admin is only ever visited directly at /admin — lazy-load it so its code
+// (and the upload client) stays out of the public site bundle.
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
@@ -19,6 +23,15 @@ createRoot(document.getElementById("root")!).render(
       <Routes>
         {/* Standalone dev aid — no site navbar/footer chrome */}
         <Route path="/preview" element={<MobilePreview />} />
+        {/* Standalone admin — no site chrome; password-gated inside */}
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={null}>
+              <AdminPage />
+            </Suspense>
+          }
+        />
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="services" element={<ServicesPage />} />
