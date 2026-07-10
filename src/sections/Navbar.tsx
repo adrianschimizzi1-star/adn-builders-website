@@ -5,11 +5,12 @@ import { business, telHref } from "../data/business";
 import { Logo } from "../components/Logo";
 import { Button } from "../components/Button";
 
+// No "Contact" item: it and the CTA button both pointed at the same page.
+// The single "Book a Quote" button below is the one conversion destination.
 const links = [
   { to: "/services", label: "Services" },
   { to: "/gallery", label: "Projects" },
   { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {
@@ -61,7 +62,7 @@ export function Navbar() {
               </li>
             ))}
           </ul>
-          <Button to="/contact">Get a Free Quote</Button>
+          <Button to="/quote">Book a Quote</Button>
         </div>
 
         {/* Mobile */}
@@ -110,12 +111,12 @@ export function Navbar() {
             ))}
             <li className="mt-2 px-2 pb-2">
               <Button
-                to="/contact"
+                to="/quote"
                 size="lg"
                 className="w-full"
                 onClick={() => setOpen(false)}
               >
-                Get a Free Quote
+                Book a Quote
               </Button>
             </li>
           </ul>

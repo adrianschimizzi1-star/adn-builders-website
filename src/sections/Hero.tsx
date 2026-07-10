@@ -58,8 +58,8 @@ export function Hero() {
 
         {/* CTAs */}
         <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button href="#quote" size="lg">
-            Get a Free Quote
+          <Button to="/quote" size="lg">
+            Book a Quote
             <ArrowRight className="h-5 w-5" aria-hidden />
           </Button>
           <Button href={telHref} size="lg" variant="outline">

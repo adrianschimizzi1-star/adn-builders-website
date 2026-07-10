@@ -1,73 +1,50 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type DragEvent,
-  type FormEvent,
-} from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
-  Check,
   Eye,
   EyeOff,
-  ImagePlus,
+  Image as ImageIcon,
   Loader2,
   Lock,
   LogOut,
-  Pencil,
-  Trash2,
-  UploadCloud,
-  X,
+  MessageSquareQuote,
+  Users,
+  Wrench,
 } from "lucide-react";
-import { galleryFilters, type GalleryCategory } from "../data/gallery";
 import { Button } from "../components/Button";
-import { TextInput, SelectInput } from "../components/FormInputs";
 import { usePageMeta } from "../hooks/usePageMeta";
 import {
   checkSession,
-  deletePhoto,
+  getContent,
   listPhotos,
   login,
   logout,
-  resizeImage,
-  updatePhoto,
-  uploadPhoto,
-  type PhotoCategory,
   type ServerPhoto,
+  type SiteContent,
 } from "../lib/adminApi";
-
-const CATEGORY_OPTIONS = galleryFilters
-  .filter((f) => f.id !== "all")
-  .map((f) => ({ id: f.id as PhotoCategory, label: f.label }));
-
-const DEFAULT_CATEGORY: PhotoCategory = CATEGORY_OPTIONS[0].id;
-
-function categoryLabel(id: string): string {
-  return galleryFilters.find((f) => f.id === id)?.label ?? id;
-}
-
-/** "kitchen-reno_final.jpg" -> "kitchen reno final" */
-function prettifyName(name: string): string {
-  return name
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .trim();
-}
-
-interface Draft {
-  key: string;
-  file: File;
-  preview: string;
-  title: string;
-  category: PhotoCategory;
-  alt: string;
-}
+import { PhotosPanel } from "./admin/PhotosPanel";
+import { ProjectsPanel } from "./admin/ProjectsPanel";
+import { ReviewsPanel } from "./admin/ReviewsPanel";
+import { TeamPanel } from "./admin/TeamPanel";
 
 type Auth = "checking" | "locked" | "unlocked";
 
+const TABS = [
+  { id: "photos", label: "Photos", icon: ImageIcon },
+  { id: "projects", label: "Projects", icon: Wrench },
+  { id: "reviews", label: "Reviews", icon: MessageSquareQuote },
+  { id: "team", label: "Team", icon: Users },
+] as const;
+
+type Tab = (typeof TABS)[number]["id"];
+
+const EMPTY_CONTENT: SiteContent = { reviews: [], team: [], projects: [] };
+
+/**
+ * Admin shell: password gate, then four managers over the site's editable
+ * content. Photos and content are loaded once here and shared with the panels so
+ * the Projects manager can see the photo list it attaches from.
+ */
 export default function AdminPage() {
   usePageMeta("Admin · ADN Builders");
 
@@ -77,28 +54,14 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState("");
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [existing, setExisting] = useState<ServerPhoto[]>([]);
-  const [loadingPhotos, setLoadingPhotos] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState({ done: 0, total: 0 });
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("photos");
+  const [photos, setPhotos] = useState<ServerPhoto[]>([]);
+  const [content, setContent] = useState<SiteContent>(EMPTY_CONTENT);
+  // Starts true so the panels never mount against empty content and snapshot it
+  // into their drafts.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [dragOver, setDragOver] = useState(false);
-  const [manageFilter, setManageFilter] = useState<GalleryCategory>("all");
-  const [editing, setEditing] = useState<ServerPhoto | null>(null);
-
-  // Per-category counts for the manage-list filter pills.
-  const counts = useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const p of existing) c[p.category] = (c[p.category] ?? 0) + 1;
-    return c;
-  }, [existing]);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const draftsRef = useRef<Draft[]>([]);
-  draftsRef.current = drafts;
 
   // Keep this page out of search results.
   useEffect(() => {
@@ -111,38 +74,34 @@ export default function AdminPage() {
     };
   }, []);
 
-  // Revoke any outstanding object URLs when the page unmounts.
-  useEffect(
-    () => () => {
-      draftsRef.current.forEach((d) => URL.revokeObjectURL(d.preview));
-    },
-    [],
-  );
-
-  const loadPhotos = useCallback(async () => {
-    setLoadingPhotos(true);
+  const loadAll = useCallback(async () => {
+    setLoading(true);
     try {
       // `fresh` bypasses the edge cache so the admin always shows true state.
-      setExisting(await listPhotos(true));
+      const [nextPhotos, nextContent] = await Promise.all([
+        listPhotos(true),
+        getContent(true),
+      ]);
+      setPhotos(nextPhotos);
+      setContent(nextContent);
     } catch {
-      /* leave the list as-is */
+      /* leave whatever we have */
     } finally {
-      setLoadingPhotos(false);
+      setLoading(false);
     }
   }, []);
 
-  // On first load, see whether we're already unlocked from a previous session.
   useEffect(() => {
     let active = true;
-    checkSession().then((ok) => {
+    void checkSession().then((ok) => {
       if (!active) return;
       setAuth(ok ? "unlocked" : "locked");
-      if (ok) void loadPhotos();
+      if (ok) void loadAll();
     });
     return () => {
       active = false;
     };
-  }, [loadPhotos]);
+  }, [loadAll]);
 
   async function handleLogin(e: FormEvent) {
     e.preventDefault();
@@ -152,7 +111,7 @@ export default function AdminPage() {
       await login(password);
       setPassword("");
       setAuth("unlocked");
-      void loadPhotos();
+      void loadAll();
     } catch (err) {
       setLoginError((err as Error).message || "Login failed");
     } finally {
@@ -162,115 +121,18 @@ export default function AdminPage() {
 
   async function handleLogout() {
     await logout().catch(() => {});
-    drafts.forEach((d) => URL.revokeObjectURL(d.preview));
-    setDrafts([]);
-    setExisting([]);
+    setPhotos([]);
+    setContent(EMPTY_CONTENT);
     setAuth("locked");
   }
 
-  const addFiles = useCallback((files: FileList | File[]) => {
-    const images = Array.from(files).filter((f) =>
-      f.type.startsWith("image/"),
-    );
-    if (images.length === 0) return;
-    setNotice("");
-    setError("");
-    setDrafts((prev) => [
-      ...prev,
-      ...images.map((file) => ({
-        key: crypto.randomUUID(),
-        file,
-        preview: URL.createObjectURL(file),
-        title: prettifyName(file.name),
-        category: DEFAULT_CATEGORY,
-        alt: "",
-      })),
-    ]);
-  }, []);
-
-  function onFileInput(e: ChangeEvent<HTMLInputElement>) {
-    if (e.target.files) addFiles(e.target.files);
-    e.target.value = ""; // allow re-selecting the same file
-  }
-
-  function onDrop(e: DragEvent<HTMLDivElement>) {
-    e.preventDefault();
-    setDragOver(false);
-    if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
-  }
-
-  function updateDraft(key: string, patch: Partial<Draft>) {
-    setDrafts((prev) =>
-      prev.map((d) => (d.key === key ? { ...d, ...patch } : d)),
-    );
-  }
-
-  function removeDraft(key: string) {
-    setDrafts((prev) => {
-      const found = prev.find((d) => d.key === key);
-      if (found) URL.revokeObjectURL(found.preview);
-      return prev.filter((d) => d.key !== key);
-    });
-  }
-
-  async function publishAll() {
-    const queue = draftsRef.current;
-    if (queue.length === 0 || busy) return;
-    setBusy(true);
+  // Banners are transient — clear them whenever the operator switches context.
+  function switchTab(next: Tab) {
+    setTab(next);
     setError("");
     setNotice("");
-    setProgress({ done: 0, total: queue.length });
-
-    const failed: Draft[] = [];
-    const uploaded: ServerPhoto[] = [];
-    for (let i = 0; i < queue.length; i++) {
-      const d = queue[i];
-      try {
-        const { dataBase64, contentType } = await resizeImage(d.file);
-        const photo = await uploadPhoto({
-          dataBase64,
-          contentType,
-          title: d.title.trim() || prettifyName(d.file.name) || "Untitled",
-          category: d.category,
-          alt: d.alt.trim(),
-        });
-        uploaded.push(photo);
-        URL.revokeObjectURL(d.preview);
-      } catch {
-        failed.push(d);
-      }
-      setProgress({ done: i + 1, total: queue.length });
-    }
-
-    setExisting((prev) => [...uploaded, ...prev]);
-    setDrafts(failed);
-    setBusy(false);
-    if (failed.length > 0) {
-      setError(
-        `${failed.length} photo${failed.length > 1 ? "s" : ""} couldn't be uploaded — please try again.`,
-      );
-    } else {
-      setNotice(
-        `${uploaded.length} photo${uploaded.length > 1 ? "s" : ""} published — they're live on the site now.`,
-      );
-    }
   }
 
-  async function remove(id: string) {
-    if (!window.confirm("Delete this photo? This can't be undone.")) return;
-    setDeletingId(id);
-    setError("");
-    try {
-      await deletePhoto(id);
-      setExisting((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
-      setError((err as Error).message || "Could not delete that photo.");
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
-  // ---- Checking / locked screens ------------------------------------------
   if (auth === "checking") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-navy-950 text-navy-300">
@@ -292,7 +154,7 @@ export default function AdminPage() {
               <Lock className="h-5 w-5" aria-hidden />
             </span>
             <div>
-              <h1 className="text-lg font-bold text-navy-900">Portfolio admin</h1>
+              <h1 className="text-lg font-bold text-navy-900">Site admin</h1>
               <p className="text-sm text-navy-500">Enter the password to continue</p>
             </div>
           </div>
@@ -331,9 +193,7 @@ export default function AdminPage() {
               </button>
             </div>
             {loginError && (
-              <p className="mt-1 text-xs font-medium text-red-600">
-                {loginError}
-              </p>
+              <p className="mt-1 text-xs font-medium text-red-600">{loginError}</p>
             )}
           </div>
 
@@ -357,40 +217,57 @@ export default function AdminPage() {
     );
   }
 
-  // ---- Unlocked admin ------------------------------------------------------
-  const shown =
-    manageFilter === "all"
-      ? existing
-      : existing.filter((p) => p.category === manageFilter);
-
   return (
     <div className="min-h-screen bg-navy-950 text-navy-100">
       <header className="border-b border-white/10 bg-navy-950/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-4 sm:px-6">
-          <h1 className="text-base font-bold text-white sm:text-lg">
-            Portfolio admin
-          </h1>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/gallery"
-              className="text-sm font-medium text-navy-300 transition-colors hover:text-white"
-            >
-              View gallery
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-300 transition-colors hover:text-white"
-            >
-              <LogOut className="h-4 w-4" aria-hidden />
-              Log out
-            </button>
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-6">
+          <div className="flex items-center justify-between gap-4 py-4">
+            <h1 className="text-base font-bold text-white sm:text-lg">Site admin</h1>
+            <div className="flex items-center gap-4">
+              <Link
+                to="/gallery"
+                className="text-sm font-medium text-navy-300 transition-colors hover:text-white"
+              >
+                View site
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy-300 transition-colors hover:text-white"
+              >
+                <LogOut className="h-4 w-4" aria-hidden />
+                Log out
+              </button>
+            </div>
           </div>
+
+          {/* Tabs */}
+          <nav className="-mb-px flex gap-1 overflow-x-auto" aria-label="Admin sections">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const active = tab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => switchTab(t.id)}
+                  aria-current={active ? "page" : undefined}
+                  className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+                    active
+                      ? "border-accent-500 text-white"
+                      : "border-transparent text-navy-400 hover:border-white/20 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" aria-hidden />
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-6 sm:py-10">
-        {/* Status banners */}
         {error && (
           <p
             role="alert"
@@ -400,377 +277,61 @@ export default function AdminPage() {
           </p>
         )}
         {notice && (
-          <p className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300">
+          <p
+            role="status"
+            className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300"
+          >
             {notice}
           </p>
         )}
 
-        {/* Upload */}
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-navy-400">
-            Add photos
-          </h2>
-
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                fileInputRef.current?.click();
-              }
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-            className={`mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-colors ${
-              dragOver
-                ? "border-accent-500 bg-accent-500/10"
-                : "border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/[0.07]"
-            }`}
-          >
-            <ImagePlus className="h-8 w-8 text-accent-400" aria-hidden />
-            <p className="mt-3 text-sm font-semibold text-white">
-              Drag photos here, or click to browse
-            </p>
-            <p className="mt-1 text-xs text-navy-400">
-              JPG, PNG or WebP — large photos are automatically resized for the web
-            </p>
-            <input
-              ref={fileInputRef}
-              id="admin-file-input"
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={onFileInput}
-            />
+        {loading ? (
+          <div className="flex items-center gap-2 text-navy-400">
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+            Loading…
           </div>
-
-          {/* Drafts awaiting publish */}
-          {drafts.length > 0 && (
-            <div className="mt-6 space-y-4">
-              {drafts.map((d) => (
-                <div
-                  key={d.key}
-                  className="flex flex-col gap-4 rounded-xl bg-white p-4 sm:flex-row"
-                >
-                  <img
-                    src={d.preview}
-                    alt=""
-                    className="h-28 w-full shrink-0 rounded-lg object-cover sm:h-28 sm:w-40"
-                  />
-                  <div className="flex-1 space-y-3">
-                    <TextInput
-                      label="Title"
-                      id={`title-${d.key}`}
-                      value={d.title}
-                      disabled={busy}
-                      onChange={(e) =>
-                        updateDraft(d.key, { title: e.target.value })
-                      }
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <SelectInput
-                        label="Category"
-                        id={`cat-${d.key}`}
-                        value={d.category}
-                        disabled={busy}
-                        onChange={(e) =>
-                          updateDraft(d.key, {
-                            category: e.target.value as PhotoCategory,
-                          })
-                        }
-                      >
-                        {CATEGORY_OPTIONS.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </SelectInput>
-                      <TextInput
-                        label="Alt text (optional)"
-                        id={`alt-${d.key}`}
-                        placeholder="Describes the photo for accessibility"
-                        value={d.alt}
-                        disabled={busy}
-                        onChange={(e) =>
-                          updateDraft(d.key, { alt: e.target.value })
-                        }
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeDraft(d.key)}
-                    disabled={busy}
-                    aria-label="Remove"
-                    className="self-start rounded-lg p-2 text-navy-400 transition-colors hover:bg-navy-100 hover:text-navy-700 disabled:opacity-50"
-                  >
-                    <X className="h-5 w-5" aria-hidden />
-                  </button>
-                </div>
-              ))}
-
-              <Button
-                type="button"
-                size="lg"
-                onClick={publishAll}
-                disabled={busy}
-                className="w-full sm:w-auto"
-              >
-                {busy ? (
-                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-                ) : (
-                  <UploadCloud className="h-5 w-5" aria-hidden />
-                )}
-                {busy
-                  ? `Publishing ${progress.done}/${progress.total}…`
-                  : `Publish ${drafts.length} photo${drafts.length > 1 ? "s" : ""}`}
-              </Button>
+        ) : (
+          // All four panels stay mounted and are hidden rather than unmounted:
+          // each owns a local draft, and unmounting would silently throw away
+          // unsaved edits the moment the operator clicked another tab.
+          <>
+            <div hidden={tab !== "photos"}>
+              <PhotosPanel
+                photos={photos}
+                projects={content.projects}
+                setPhotos={setPhotos}
+                onError={setError}
+                onNotice={setNotice}
+              />
             </div>
-          )}
-        </section>
-
-        {/* Manage existing */}
-        <section className="mt-12">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-navy-400">
-            Current photos {existing.length > 0 && `(${existing.length})`}
-          </h2>
-
-          {/* Filter by category (with counts) */}
-          {existing.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {galleryFilters.map((f) => {
-                const active = manageFilter === f.id;
-                const count =
-                  f.id === "all" ? existing.length : (counts[f.id] ?? 0);
-                return (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setManageFilter(f.id)}
-                    aria-pressed={active}
-                    className={`rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-                      active
-                        ? "bg-accent-500 text-navy-950"
-                        : "bg-white/5 text-navy-200 ring-1 ring-inset ring-white/10 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    {f.label} <span className="opacity-70">({count})</span>
-                  </button>
-                );
-              })}
+            <div hidden={tab !== "projects"}>
+              <ProjectsPanel
+                projects={content.projects}
+                photos={photos}
+                onSaved={(projects) => setContent((c) => ({ ...c, projects }))}
+                onError={setError}
+                onNotice={setNotice}
+              />
             </div>
-          )}
-
-          {loadingPhotos ? (
-            <div className="mt-6 flex items-center gap-2 text-navy-400">
-              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-              Loading…
+            <div hidden={tab !== "reviews"}>
+              <ReviewsPanel
+                reviews={content.reviews}
+                onSaved={(reviews) => setContent((c) => ({ ...c, reviews }))}
+                onError={setError}
+                onNotice={setNotice}
+              />
             </div>
-          ) : existing.length === 0 ? (
-            <p className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-navy-400">
-              No photos yet. Add some above and they'll appear on the gallery.
-            </p>
-          ) : shown.length === 0 ? (
-            <p className="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-navy-400">
-              No photos in this category yet.
-            </p>
-          ) : (
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {shown.map((p) => (
-                <div
-                  key={p.id}
-                  className="group relative overflow-hidden rounded-xl bg-navy-900 ring-1 ring-white/10"
-                >
-                  <img
-                    src={p.url}
-                    alt={p.alt}
-                    loading="lazy"
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                  <div className="p-3">
-                    <p className="truncate text-sm font-semibold text-white">
-                      {p.title}
-                    </p>
-                    <p className="mt-0.5 text-xs text-navy-400">
-                      {categoryLabel(p.category)}
-                    </p>
-                  </div>
-                  <div className="absolute right-2 top-2 flex gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setEditing(p)}
-                      aria-label={`Edit ${p.title}`}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy-950/70 text-white backdrop-blur transition-colors hover:bg-accent-500 hover:text-navy-950"
-                    >
-                      <Pencil className="h-4 w-4" aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => remove(p.id)}
-                      disabled={deletingId === p.id}
-                      aria-label={`Delete ${p.title}`}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy-950/70 text-white backdrop-blur transition-colors hover:bg-red-600 disabled:opacity-100"
-                    >
-                      {deletingId === p.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                      ) : (
-                        <Trash2 className="h-4 w-4" aria-hidden />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div hidden={tab !== "team"}>
+              <TeamPanel
+                team={content.team}
+                onSaved={(team) => setContent((c) => ({ ...c, team }))}
+                onError={setError}
+                onNotice={setNotice}
+              />
             </div>
-          )}
-        </section>
-      </main>
-
-      {editing && (
-        <EditPhotoModal
-          photo={editing}
-          onClose={() => setEditing(null)}
-          onSaved={(updated) => {
-            setExisting((prev) =>
-              prev.map((p) => (p.id === updated.id ? updated : p)),
-            );
-            setEditing(null);
-            setNotice("Photo updated.");
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-/** Modal for editing a photo's title / category / alt text (image unchanged). */
-function EditPhotoModal({
-  photo,
-  onClose,
-  onSaved,
-}: {
-  photo: ServerPhoto;
-  onClose: () => void;
-  onSaved: (photo: ServerPhoto) => void;
-}) {
-  const [title, setTitle] = useState(photo.title);
-  const [category, setCategory] = useState<PhotoCategory>(photo.category);
-  const [alt, setAlt] = useState(photo.alt);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  async function save(e: FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) {
-      setError("Please enter a title.");
-      return;
-    }
-    setSaving(true);
-    setError("");
-    try {
-      const updated = await updatePhoto(photo.id, {
-        title: title.trim(),
-        category,
-        alt: alt.trim(),
-      });
-      onSaved(updated);
-    } catch (err) {
-      setError((err as Error).message || "Could not save changes.");
-      setSaving(false);
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-4"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Edit photo"
-    >
-      <form
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={save}
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-navy-900">Edit photo</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="rounded-lg p-1.5 text-navy-400 transition-colors hover:bg-navy-100 hover:text-navy-700"
-          >
-            <X className="h-5 w-5" aria-hidden />
-          </button>
-        </div>
-
-        <img
-          src={photo.url}
-          alt={photo.alt}
-          className="mb-5 aspect-[4/3] w-full rounded-lg object-cover"
-        />
-
-        <div className="space-y-3">
-          <TextInput
-            label="Title"
-            id="edit-title"
-            value={title}
-            disabled={saving}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <SelectInput
-            label="Category"
-            id="edit-category"
-            value={category}
-            disabled={saving}
-            onChange={(e) => setCategory(e.target.value as PhotoCategory)}
-          >
-            {CATEGORY_OPTIONS.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </SelectInput>
-          <TextInput
-            label="Alt text (optional)"
-            id="edit-alt"
-            placeholder="Describes the photo for accessibility"
-            value={alt}
-            disabled={saving}
-            onChange={(e) => setAlt(e.target.value)}
-          />
-        </div>
-
-        {error && (
-          <p className="mt-3 text-sm font-medium text-red-600">{error}</p>
+          </>
         )}
-
-        <div className="mt-6 flex items-center gap-3">
-          <Button type="submit" disabled={saving} className="flex-1">
-            {saving ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-            ) : (
-              <Check className="h-4 w-4" aria-hidden />
-            )}
-            {saving ? "Saving…" : "Save changes"}
-          </Button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="rounded-lg px-4 py-2.5 text-sm font-semibold text-navy-600 transition-colors hover:bg-navy-100 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+      </main>
     </div>
   );
 }

@@ -23,7 +23,8 @@ export interface BusinessInfo {
   email: string;
   licenceNumber: string;
   fullyInsured: boolean;
-  /** Opening hours — shown on the /contact page. */
+  /** Opening hours. Not currently rendered (the Opening Hours card was removed
+   *  in spec 06); kept as a business fact per the data-layer invariant. */
   hours: OpeningHours[];
   social: { instagram: string; facebook: string };
 }

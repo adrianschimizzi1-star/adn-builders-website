@@ -1,17 +1,20 @@
 import { Star, ArrowRight } from "lucide-react";
-import { reviews, googleReviewsUrl } from "../data/reviews";
+import { reviews as fallbackReviews, googleReviewsUrl } from "../data/reviews";
 import { Button } from "./Button";
 import { SectionHeading } from "./SectionHeading";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 /**
- * Static reviews block (the only new component spec 06 authorises).
+ * Reviews block (the only new component spec 06 authorises).
  *
  * `full`    — homepage: up to 4 cards + intro copy.
- * `compact` — /contact: up to 3 cards, tighter header.
+ * `compact` — /quote: up to 3 cards, tighter header.
  *
- * The section background + boundary-blend classes are passed in via `className`
- * so the same component can sit on either shade of the alternating layout.
- * Card radius (rounded-2xl) matches the /about team cards, per spec.
+ * Reviews come from the admin (spec 05, step 7); the static placeholders in
+ * `data/reviews.ts` show until the owner has entered real ones. The section
+ * background + boundary-blend classes are passed in via `className` so the same
+ * component can sit on either shade of the alternating layout. Card radius
+ * (rounded-2xl) matches the /about team cards, per spec.
  */
 export function Reviews({
   variant = "full",
@@ -21,7 +24,10 @@ export function Reviews({
   className?: string;
 }) {
   const compact = variant === "compact";
-  const items = compact ? reviews.slice(0, 3) : reviews.slice(0, 4);
+  const { content } = useSiteContent();
+  const source =
+    content.reviews.length > 0 ? content.reviews : fallbackReviews;
+  const items = compact ? source.slice(0, 3) : source.slice(0, 4);
 
   return (
     <section id="reviews" className={`scroll-mt-20 py-16 sm:py-24 ${className}`}>
