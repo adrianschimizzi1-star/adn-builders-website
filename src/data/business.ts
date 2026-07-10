@@ -54,8 +54,8 @@ export const business: BusinessInfo = {
   social: { instagram: "", facebook: "" },
 };
 
-/** Formspree endpoint id. Create a form at https://formspree.io and paste it. */
-export const FORMSPREE_ID = NEEDS_INPUT("your-form-id"); // e.g. "xdorwkbz"
+/** Formspree endpoint id (https://formspree.io/f/mvzjybdn). */
+export const FORMSPREE_ID = "mvzjybdn";
 
 /** Convenience: a normalised tel: href. */
 export const telHref = `tel:${business.phone.replace(/\s+/g, "")}`;

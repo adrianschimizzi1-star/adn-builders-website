@@ -13,9 +13,6 @@ import { TextInput, SelectInput, TextArea } from "../components/FormInputs";
 type Status = "idle" | "submitting" | "success" | "error";
 type Errors = Partial<Record<"name" | "phone" | "email" | "service" | "message", string>>;
 
-const FORMSPREE_CONFIGURED =
-  FORMSPREE_ID !== "your-form-id" && FORMSPREE_ID !== "";
-
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validate(data: Record<string, string>): Errors {
@@ -58,14 +55,6 @@ export function QuoteForm() {
     const nextErrors = validate(data);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-
-    if (!FORMSPREE_CONFIGURED) {
-      setStatus("error");
-      setFormError(
-        "The form isn't connected yet — add your Formspree ID in src/data/business.ts.",
-      );
-      return;
-    }
 
     setStatus("submitting");
     setFormError("");
