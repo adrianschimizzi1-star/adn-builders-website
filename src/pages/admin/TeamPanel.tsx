@@ -3,7 +3,14 @@ import { Loader2, Plus, Save, Trash2, Upload, User } from "lucide-react";
 import type { TeamMember } from "../../data/about";
 import { Button } from "../../components/Button";
 import { resizeImage, saveContent, uploadImage } from "../../lib/adminApi";
-import { DragHandle, ReorderButtons, useDragReorder } from "./reorder";
+import {
+  DragHandle,
+  ReorderButtons,
+  useDragReorder,
+  withKeys,
+  stripKey,
+  type Keyed,
+} from "./reorder";
 
 const BLANK: TeamMember = { name: "", description: "", alt: "" };
 
@@ -19,11 +26,11 @@ export function TeamPanel({
   onError: (msg: string) => void;
   onNotice: (msg: string) => void;
 }) {
-  const [draft, setDraft] = useState<TeamMember[]>(team);
+  const [draft, setDraft] = useState<Keyed<TeamMember>[]>(() => withKeys(team));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<number | null>(null);
   const fileInputs = useRef<Record<number, HTMLInputElement | null>>({});
-  const dirty = JSON.stringify(draft) !== JSON.stringify(team);
+  const dirty = JSON.stringify(draft.map(stripKey)) !== JSON.stringify(team);
   const drag = useDragReorder(draft, setDraft);
 
   function patch(i: number, next: Partial<TeamMember>) {
@@ -60,12 +67,12 @@ export function TeamPanel({
       const saved = await saveContent(
         "team",
         draft.map((m) => ({
-          ...m,
+          ...stripKey(m),
           alt: m.alt.trim() || `Portrait of ${m.name.trim()}`,
         })),
       );
       onSaved(saved);
-      setDraft(saved);
+      setDraft(withKeys(saved));
       onNotice("Team saved — it's live on the About page now.");
     } catch (err) {
       onError((err as Error).message || "Could not save the team.");
@@ -90,12 +97,17 @@ export function TeamPanel({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setDraft(Array.from({ length: 4 }, () => ({ ...BLANK })))}
+              onClick={() =>
+                setDraft(withKeys(Array.from({ length: 4 }, () => ({ ...BLANK }))))
+              }
             >
               Start with 4 cards
             </Button>
           )}
-          <Button type="button" onClick={() => setDraft((p) => [...p, { ...BLANK }])}>
+          <Button
+            type="button"
+            onClick={() => setDraft((p) => [...p, ...withKeys([{ ...BLANK }])])}
+          >
             <Plus className="h-4 w-4" aria-hidden />
             Add member
           </Button>
@@ -111,7 +123,7 @@ export function TeamPanel({
         <ul className="mt-6 space-y-4">
           {draft.map((member, i) => (
             <li
-              key={i}
+              key={member._key}
               {...drag.rowProps(i)}
               className="flex gap-4 rounded-xl bg-white p-4 data-[drag-over=true]:ring-2 data-[drag-over=true]:ring-accent-500"
             >

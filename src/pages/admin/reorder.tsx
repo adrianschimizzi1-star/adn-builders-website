@@ -41,6 +41,33 @@ export function reorderSubset<T extends { id: string }>(
 }
 
 /**
+ * Stable, client-only row keys for the editable content lists (reviews, team).
+ *
+ * Those docs have no persistent id — the server stores them positionally and
+ * strips unknown fields on save (see api/content.ts) — so an id can't survive a
+ * save round-trip. React still needs a key that *follows each row through a
+ * reorder*: keyed by array index, React reuses DOM nodes by slot, so a focused
+ * ReorderButton stays on the slot rather than the row after a move, stranding
+ * keyboard users on the wrong item. These keys live only in this browser
+ * session; they are never sent to, or read back from, the server.
+ */
+export type Keyed<T> = T & { _key: string };
+
+let keySeq = 0;
+
+/** Wraps each item with a fresh, stable, client-only key. */
+export function withKeys<T>(items: T[]): Keyed<T>[] {
+  return items.map((item) => ({ ...item, _key: `row-${(keySeq += 1)}` }));
+}
+
+/** Drops the client-only key back off, for persistence or dirty-comparison. */
+export function stripKey<T>(item: Keyed<T>): T {
+  const bare = { ...item } as Partial<Keyed<T>>;
+  delete bare._key;
+  return bare as T;
+}
+
+/**
  * Drag state + handlers for one reorderable list.
  *
  * `draggable` goes on the *handle*, not the row: a draggable ancestor swallows

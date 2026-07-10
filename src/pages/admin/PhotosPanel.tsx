@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -97,6 +98,16 @@ export function PhotosPanel({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftsRef = useRef<Draft[]>([]);
   draftsRef.current = drafts;
+
+  // Release object URLs for any drafts still queued when the panel unmounts
+  // (e.g. the operator logs out mid-queue). publishAll/removeDraft cover the
+  // normal paths; this catches the rest. draftsRef holds the latest list so this
+  // once-on-unmount cleanup sees every outstanding preview.
+  useEffect(() => {
+    return () => {
+      draftsRef.current.forEach((d) => URL.revokeObjectURL(d.preview));
+    };
+  }, []);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -526,6 +537,52 @@ function EditPhotoModal({
   const [alt, setAlt] = useState(photo.alt);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Keyboard dialog baseline, matching Lightbox: Esc closes, focus moves into
+  // the dialog on open and is trapped inside it, and returns to the invoking
+  // Edit button (the element focused when the modal mounted) on close. The modal
+  // is mounted only while editing, so this runs once per open.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    const focusables = () =>
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>(
+          'button, input, select, textarea, [href], [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      ).filter((el) => !el.hasAttribute("disabled"));
+
+    focusables()[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const els = focusables();
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !dialog?.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus();
+    };
+    // Mount/unmount only — onClose is stable in behaviour across renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -550,6 +607,7 @@ function EditPhotoModal({
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-navy-950/80 p-4"
       onClick={onClose}
       role="dialog"

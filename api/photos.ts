@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { isAuthed } from "./_lib/auth.js";
+import { MAX_IMAGE_BYTES, IMAGE_TYPES } from "./_lib/media.js";
 import {
   listPhotos,
   readPhoto,
@@ -11,10 +12,6 @@ import {
   type PhotoEntry,
 } from "./_lib/store.js";
 
-// Guard against oversized payloads. Client-side resize keeps real uploads far
-// below this (and below Vercel's ~4.5MB request-body limit).
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
-
 // A reorder rewrites one blob per moved photo; cap the work a single request can
 // schedule. Far above any realistic portfolio size.
 const MAX_REORDER_IDS = 500;
@@ -22,15 +19,6 @@ const MAX_REORDER_IDS = 500;
 function newId(): string {
   return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
-
-// Raster formats only. Notably excludes image/svg+xml — an SVG is an active
-// document (can carry <script>), and the Blob CDN serves it inline, so it must
-// never be storable even though it matches a naive `image/*` check.
-const IMAGE_TYPES: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {

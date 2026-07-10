@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { isAuthed } from "./_lib/auth.js";
 import { putImage } from "./_lib/store.js";
+import { MAX_IMAGE_BYTES, IMAGE_TYPES } from "./_lib/media.js";
 
 /*
  * Authed image upload for content that isn't a portfolio photo (currently just
@@ -9,17 +10,8 @@ import { putImage } from "./_lib/store.js";
  * content/team.json.
  */
 
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_PREFIXES = ["team"] as const;
 type Prefix = (typeof ALLOWED_PREFIXES)[number];
-
-// Raster only — no image/svg+xml (an SVG is an active document served inline
-// from the Blob CDN). Reject unknown types rather than coercing the extension.
-const IMAGE_TYPES: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {

@@ -84,8 +84,13 @@ export default function AdminPage() {
       ]);
       setPhotos(nextPhotos);
       setContent(nextContent);
-    } catch {
-      /* leave whatever we have */
+    } catch (err) {
+      // Surface the failure the same way each panel's save() does — otherwise
+      // the operator just sees empty/stale panels and assumes there's no content.
+      setError(
+        (err as Error).message ||
+          "Couldn't load photos and content — try refreshing.",
+      );
     } finally {
       setLoading(false);
     }

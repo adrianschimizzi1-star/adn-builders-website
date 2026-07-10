@@ -3,7 +3,14 @@ import { Loader2, Plus, Save, Star, Trash2 } from "lucide-react";
 import type { Review } from "../../data/reviews";
 import { Button } from "../../components/Button";
 import { saveContent } from "../../lib/adminApi";
-import { DragHandle, ReorderButtons, useDragReorder } from "./reorder";
+import {
+  DragHandle,
+  ReorderButtons,
+  useDragReorder,
+  withKeys,
+  stripKey,
+  type Keyed,
+} from "./reorder";
 
 const BLANK: Review = { name: "", rating: 5, quote: "" };
 
@@ -23,9 +30,9 @@ export function ReviewsPanel({
   onError: (msg: string) => void;
   onNotice: (msg: string) => void;
 }) {
-  const [draft, setDraft] = useState<Review[]>(reviews);
+  const [draft, setDraft] = useState<Keyed<Review>[]>(() => withKeys(reviews));
   const [saving, setSaving] = useState(false);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(reviews);
+  const dirty = JSON.stringify(draft.map(stripKey)) !== JSON.stringify(reviews);
   const drag = useDragReorder(draft, setDraft);
 
   function patch(i: number, next: Partial<Review>) {
@@ -40,9 +47,9 @@ export function ReviewsPanel({
     setSaving(true);
     onError("");
     try {
-      const saved = await saveContent("reviews", draft);
+      const saved = await saveContent("reviews", draft.map(stripKey));
       onSaved(saved);
-      setDraft(saved);
+      setDraft(withKeys(saved));
       onNotice("Reviews saved — they're live on the site now.");
     } catch (err) {
       onError((err as Error).message || "Could not save reviews.");
@@ -64,7 +71,7 @@ export function ReviewsPanel({
         </div>
         <Button
           type="button"
-          onClick={() => setDraft((p) => [...p, { ...BLANK }])}
+          onClick={() => setDraft((p) => [...p, ...withKeys([{ ...BLANK }])])}
         >
           <Plus className="h-4 w-4" aria-hidden />
           Add review
@@ -79,7 +86,7 @@ export function ReviewsPanel({
         <ul className="mt-6 space-y-4">
           {draft.map((review, i) => (
             <li
-              key={i}
+              key={review._key}
               {...drag.rowProps(i)}
               className="flex gap-4 rounded-xl bg-white p-4 data-[drag-over=true]:ring-2 data-[drag-over=true]:ring-accent-500"
             >
