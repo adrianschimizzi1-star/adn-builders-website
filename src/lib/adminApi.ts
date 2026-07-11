@@ -1,12 +1,14 @@
-import type { GalleryCategory } from "../data/gallery";
+import type { PhotoCategory, Project } from "../data/gallery";
+import type { Review } from "../data/reviews";
+import type { TeamMember } from "../data/about";
 
 /**
- * Thin client for the /api backend (login/session + photo CRUD) plus an
- * in-browser image downscaler. All calls are same-origin so the httpOnly
+ * Thin client for the /api backend (login/session, photo CRUD, site content)
+ * plus an in-browser image downscaler. All calls are same-origin so the httpOnly
  * session cookie rides along automatically.
  */
 
-export type PhotoCategory = Exclude<GalleryCategory, "all">;
+export type { PhotoCategory };
 
 export interface ServerPhoto {
   id: string;
@@ -16,6 +18,14 @@ export interface ServerPhoto {
   url: string;
   pathname: string;
   createdAt: number;
+  order?: number;
+}
+
+/** Everything the owner can edit that isn't a portfolio photo. */
+export interface SiteContent {
+  reviews: Review[];
+  team: TeamMember[];
+  projects: Project[];
 }
 
 async function jsonFetch<T>(input: string, init?: RequestInit): Promise<T> {
@@ -95,6 +105,58 @@ export async function deletePhoto(id: string): Promise<void> {
   await jsonFetch(`/api/photos?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
+}
+
+/**
+ * Persists a new display order. Pass the complete list of photo ids in their new
+ * global sequence — the server rewrites only the sidecars that actually moved.
+ */
+export async function reorderPhotos(ids: string[]): Promise<void> {
+  await jsonFetch("/api/photos", {
+    method: "PATCH",
+    body: JSON.stringify({ order: ids }),
+  });
+}
+
+// ---- Site content (reviews / team / projects) ------------------------------
+
+/** Pass `fresh` in the admin to bypass the ~30s edge cache. */
+export async function getContent(fresh = false): Promise<SiteContent> {
+  const url = fresh ? `/api/content?t=${Date.now()}` : "/api/content";
+  const body = await jsonFetch<Partial<SiteContent>>(url);
+  return {
+    reviews: Array.isArray(body.reviews) ? body.reviews : [],
+    team: Array.isArray(body.team) ? body.team : [],
+    projects: Array.isArray(body.projects) ? body.projects : [],
+  };
+}
+
+/**
+ * Replaces one content document wholesale. The array order IS the display order,
+ * so this is also how reordering is saved.
+ */
+export async function saveContent<K extends keyof SiteContent>(
+  doc: K,
+  data: SiteContent[K],
+): Promise<SiteContent[K]> {
+  const body = await jsonFetch<Record<string, SiteContent[K]>>("/api/content", {
+    method: "PUT",
+    body: JSON.stringify({ doc, data }),
+  });
+  return body[doc];
+}
+
+/** Uploads a non-portfolio image (currently team portraits) and returns its url. */
+export async function uploadImage(input: {
+  dataBase64: string;
+  contentType: string;
+  prefix: "team";
+}): Promise<string> {
+  const { url } = await jsonFetch<{ url: string }>("/api/upload", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return url;
 }
 
 /**

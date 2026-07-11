@@ -3,8 +3,13 @@ import { ArrowRight } from "lucide-react";
 import { services } from "../data/services";
 import { SectionHeading } from "../components/SectionHeading";
 import { ServiceCard } from "../components/ServiceCard";
+import { useGalleryTiles } from "../hooks/usePhotos";
 
 export function Services() {
+  // Tiles are resolved once here and handed down, rather than each ServiceCard
+  // reaching for them: one source, one fetch (spec 05, step 6).
+  const { tiles } = useGalleryTiles();
+
   return (
     <section id="services" className="scroll-mt-20 bg-navy-950 py-16 sm:py-24">
       <div className="container-page">
@@ -16,7 +21,14 @@ export function Services() {
 
         <div className="reveal-stagger mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => (
-            <ServiceCard key={service.id} service={service} />
+            <ServiceCard
+              key={service.id}
+              service={service}
+              // Representative image for the service, taken from the same tiles
+              // the Projects grid renders — so its category always matches the
+              // category its click deep-links to.
+              cover={tiles.find((t) => t.category === service.category)?.cover}
+            />
           ))}
         </div>
 

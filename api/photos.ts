@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { isAuthed } from "./_lib/auth.js";
+import { MAX_IMAGE_BYTES, IMAGE_TYPES } from "./_lib/media.js";
 import {
   listPhotos,
   readPhoto,
@@ -11,18 +12,12 @@ import {
   type PhotoEntry,
 } from "./_lib/store.js";
 
-// Guard against oversized payloads. Client-side resize keeps real uploads far
-// below this (and below Vercel's ~4.5MB request-body limit).
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
+// A reorder rewrites one blob per moved photo; cap the work a single request can
+// schedule. Far above any realistic portfolio size.
+const MAX_REORDER_IDS = 500;
 
 function newId(): string {
   return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function extFor(contentType: string): string {
-  if (contentType === "image/png") return "png";
-  if (contentType === "image/webp") return "webp";
-  return "jpg";
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -49,14 +44,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const title = typeof body.title === "string" ? body.title.trim() : "";
       const category = body.category as PhotoCategory;
       const alt = typeof body.alt === "string" ? body.alt.trim() : "";
+      // Default to JPEG (what the client re-encodes to); reject anything not in
+      // the raster whitelist rather than coercing, so a spoofed content-type
+      // can't be stored under a mismatched extension.
       const contentType =
-        typeof body.contentType === "string" &&
-        body.contentType.startsWith("image/")
-          ? body.contentType
-          : "image/jpeg";
+        typeof body.contentType === "string" ? body.contentType : "image/jpeg";
+      const ext = IMAGE_TYPES[contentType];
 
       if (!dataBase64) return res.status(400).json({ error: "Missing image data" });
       if (!title) return res.status(400).json({ error: "Missing title" });
+      if (!ext) return res.status(400).json({ error: "Unsupported image type" });
       if (!PHOTO_CATEGORIES.includes(category)) {
         return res.status(400).json({ error: "Invalid category" });
       }
@@ -69,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const id = newId();
       const { url, pathname } = await putImage(
-        `projects/${id}.${extFor(contentType)}`,
+        `projects/${id}.${ext}`,
         buffer,
         contentType,
       );
@@ -89,6 +86,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "PATCH") {
       const body = req.body ?? {};
+
+      // ---- Bulk reorder: { order: [id, id, …] } in the new display order ----
+      // The client sends the complete global sequence, so positions stay
+      // deterministic even though the admin drags within a single category.
+      if (Array.isArray(body.order)) {
+        const ids = (body.order as unknown[])
+          .filter((x): x is string => typeof x === "string")
+          .slice(0, MAX_REORDER_IDS);
+
+        const all = await listPhotos();
+        const byId = new Map(all.map((p) => [p.id, p]));
+
+        // Only rewrite sidecars whose position actually moved — a full gallery
+        // rewrite would be a blob PUT per photo on every drag.
+        const writes = ids.flatMap((id, i) => {
+          const photo = byId.get(id);
+          return photo && photo.order !== i
+            ? [writePhoto({ ...photo, order: i })]
+            : [];
+        });
+        await Promise.all(writes);
+        return res.status(200).json({ ok: true, updated: writes.length });
+      }
+
+      // ---- Metadata edit -----------------------------------------------------
       const id = typeof body.id === "string" ? body.id : "";
       const title = typeof body.title === "string" ? body.title.trim() : "";
       const category = body.category as PhotoCategory;
@@ -121,6 +143,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const existing = await readPhoto(id);
       if (!existing) return res.status(404).json({ error: "Photo not found" });
 
+      // A deleted photo may still be listed in content/projects.json `photoIds`.
+      // We deliberately do NOT cascade here: that would mean reading projects.json,
+      // mutating it, and writing it back — the exact read-modify-write this store
+      // can't do safely. Instead every consumer resolves photoIds against the live
+      // photo set, so a dangling id is simply skipped (see buildProjectTiles).
       await deletePhotoBlobs(existing);
       return res.status(200).json({ ok: true });
     }

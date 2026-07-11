@@ -1,15 +1,23 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import type { Service } from "../data/services";
-import { projects } from "../data/gallery";
+import type { GalleryPhoto } from "../data/gallery";
 import { ProjectImage } from "./ProjectImage";
 
-export function ServiceCard({ service }: { service: Service }) {
+/**
+ * `cover` is the clickable "service image", passed down from Services so every
+ * card draws on the one shared photo source. ProjectImage shows a styled
+ * placeholder until a photo file is set; if the category has no photos at all,
+ * `cover` is undefined and the image is omitted.
+ */
+export function ServiceCard({
+  service,
+  cover,
+}: {
+  service: Service;
+  cover?: GalleryPhoto;
+}) {
   const Icon = service.icon;
-  // Representative project for this service's category, used as the clickable
-  // "service image". ProjectImage shows a styled placeholder until a photo file
-  // is set; if a category has no projects at all, the image is omitted.
-  const cover = projects.find((p) => p.category === service.category);
 
   return (
     <article className="reveal group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-navy-900 transition-all hover:-translate-y-1 hover:border-accent-500/40 hover:bg-navy-800">
@@ -42,8 +50,8 @@ export function ServiceCard({ service }: { service: Service }) {
         <p className="mt-2 flex-1 text-sm leading-relaxed text-navy-300">
           {service.description}
         </p>
-        <a
-          href="#quote"
+        <Link
+          to="/quote"
           className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
         >
           Enquire
@@ -51,7 +59,7 @@ export function ServiceCard({ service }: { service: Service }) {
             className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
             aria-hidden
           />
-        </a>
+        </Link>
       </div>
     </article>
   );

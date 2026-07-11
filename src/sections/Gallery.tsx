@@ -1,19 +1,36 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { projects, galleryFilters, type GalleryCategory } from "../data/gallery";
+import {
+  galleryFilters,
+  type GalleryCategory,
+  type GalleryTile,
+} from "../data/gallery";
 import { SectionHeading } from "../components/SectionHeading";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
+import { Button } from "../components/Button";
+import { useGalleryTiles } from "../hooks/usePhotos";
 
 export function Gallery() {
   const [filter, setFilter] = useState<GalleryCategory>("all");
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  // The open tile is captured by value, not by index into `visible`: a late
+  // photo/content fetch can rebuild `visible` under an open lightbox, and a
+  // positional index would then retarget it to a different tile.
+  const [openSet, setOpenSet] = useState<GalleryTile | null>(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  // Same source as /gallery and /services — was the static seed, so admin
+  // uploads never reached the home page (spec 05, step 6).
+  const { tiles } = useGalleryTiles();
 
   const visible =
-    filter === "all"
-      ? projects
-      : projects.filter((p) => p.category === filter);
+    filter === "all" ? tiles : tiles.filter((t) => t.category === filter);
+
+  function select(index: number) {
+    setOpenSet(visible[index]);
+    setPhotoIndex(0);
+  }
 
   return (
     <section
@@ -35,7 +52,10 @@ export function Gallery() {
               <button
                 key={f.id}
                 type="button"
-                onClick={() => setFilter(f.id)}
+                onClick={() => {
+                  setFilter(f.id);
+                  setOpenSet(null);
+                }}
                 aria-pressed={active}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   active
@@ -50,7 +70,7 @@ export function Gallery() {
         </div>
 
         <div className="reveal mt-8">
-          <GalleryGrid photos={visible} onSelect={setActiveIndex} />
+          <GalleryGrid tiles={visible} onSelect={select} />
         </div>
 
         {visible.length === 0 && (
@@ -68,13 +88,27 @@ export function Gallery() {
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
+
+        {/* Conversion CTA — the Projects section's job is to push toward a quote.
+            Inlined rather than extracted: spec 05 authorises no new shared
+            components beyond Lightbox. */}
+        <div className="reveal mt-12 flex flex-col items-center gap-5 rounded-2xl border border-white/10 bg-navy-950 px-6 py-8 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
+          <p className="text-lg font-semibold text-white sm:text-xl">
+            Want results like these?
+          </p>
+          <Button to="/quote" size="lg" className="shrink-0">
+            Book a Quote
+            <ArrowRight className="h-5 w-5" aria-hidden />
+          </Button>
+        </div>
       </div>
 
       <Lightbox
-        items={visible}
-        index={activeIndex}
-        onClose={() => setActiveIndex(null)}
-        onNavigate={setActiveIndex}
+        items={openSet?.photos ?? []}
+        index={openSet ? photoIndex : null}
+        title={openSet?.title}
+        onClose={() => setOpenSet(null)}
+        onNavigate={setPhotoIndex}
       />
     </section>
   );

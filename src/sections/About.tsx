@@ -77,8 +77,8 @@ export function About() {
           </dl>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-            <Button href="#quote" size="lg">
-              Work with us
+            <Button to="/quote" size="lg">
+              Book a Quote
             </Button>
             <Link
               to="/about"

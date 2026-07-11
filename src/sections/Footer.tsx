@@ -5,12 +5,11 @@ import { Logo } from "../components/Logo";
 
 const year = "2025"; // bump as needed
 
+// No `id="contact"` any more — Contact merged into Book a Quote (spec 05) and
+// nothing linked to that anchor.
 export function Footer() {
   return (
-    <footer
-      id="contact"
-      className="scroll-mt-20 border-t border-white/10 bg-navy-950 text-navy-300"
-    >
+    <footer className="border-t border-white/10 bg-navy-950 text-navy-300">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         {/* Brand */}
         <div className="sm:col-span-2 lg:col-span-1">
@@ -61,7 +60,7 @@ export function Footer() {
             <li><Link to="/services" className="hover:text-accent-300">Services</Link></li>
             <li><Link to="/gallery" className="hover:text-accent-300">Projects</Link></li>
             <li><Link to="/about" className="hover:text-accent-300">About</Link></li>
-            <li><Link to="/contact" className="hover:text-accent-300">Get a free quote</Link></li>
+            <li><Link to="/quote" className="hover:text-accent-300">Book a Quote</Link></li>
           </ul>
         </div>
 
