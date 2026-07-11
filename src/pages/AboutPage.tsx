@@ -1,14 +1,20 @@
 import { User, ArrowRight } from "lucide-react";
 import { business } from "../data/business";
-import { about, team } from "../data/about";
+import { about, team as fallbackTeam } from "../data/about";
 import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { useSiteContent } from "../hooks/useSiteContent";
 
 export default function AboutPage() {
   usePageMeta(
     "About Us | ADN Builders",
     "Meet the team behind ADN Builders — 25+ years of licensed, insured building experience in Canberra, and how we work from first call to handover.",
   );
+
+  // Team cards come from the admin (spec 05, step 7); the placeholders in
+  // data/about.ts show until the owner has entered real members.
+  const { content } = useSiteContent();
+  const team = content.team.length > 0 ? content.team : fallbackTeam;
 
   return (
     <>
@@ -68,9 +74,10 @@ export default function AboutPage() {
               Meet the team
             </p>
             <div className="reveal-stagger mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {team.map((member) => (
+              {team.map((member, i) => (
                 <article
-                  key={member.name}
+                  // Owner-entered names aren't guaranteed unique.
+                  key={`${member.name}-${i}`}
                   className="reveal group overflow-hidden rounded-2xl border border-white/10 bg-navy-900 transition-colors hover:border-accent-500/40"
                 >
                   <div className="aspect-[4/5] w-full overflow-hidden bg-navy-800">
@@ -146,8 +153,8 @@ export default function AboutPage() {
             ))}
           </ol>
 
-          <Button to="/contact" size="lg" className="mt-10">
-            Get in touch
+          <Button to="/quote" size="lg" className="mt-10">
+            Book a Quote
             <ArrowRight className="h-5 w-5" aria-hidden />
           </Button>
         </div>

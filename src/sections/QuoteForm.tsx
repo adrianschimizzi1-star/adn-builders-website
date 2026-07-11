@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, CheckCircle2, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
 import {
   business,
   telHref,
@@ -13,9 +12,6 @@ import { TextInput, SelectInput, TextArea } from "../components/FormInputs";
 
 type Status = "idle" | "submitting" | "success" | "error";
 type Errors = Partial<Record<"name" | "phone" | "email" | "service" | "message", string>>;
-
-const FORMSPREE_CONFIGURED =
-  FORMSPREE_ID !== "your-form-id" && FORMSPREE_ID !== "";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,10 +30,17 @@ function validate(data: Record<string, string>): Errors {
 }
 
 /**
- * The quote form section. Reused as-is on the /contact page; on the home page
- * it shows a "Get in touch →" link through to the full contact page.
+ * The Book a Quote section — the site's single conversion destination.
+ *
+ * Used on Home (as part of the one-page overview) and as the primary element of
+ * the /quote page. The form is the primary element; phone / email / service area
+ * sit beside it in a secondary card.
+ *
+ * The old `showContactLink` prop is gone: it linked to /contact, which is now
+ * this same destination, so it would have been a self-link (spec 05: exactly one
+ * quote CTA destination, nothing duplicated).
  */
-export function QuoteForm({ showContactLink = false }: { showContactLink?: boolean } = {}) {
+export function QuoteForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState("");
@@ -52,14 +55,6 @@ export function QuoteForm({ showContactLink = false }: { showContactLink?: boole
     const nextErrors = validate(data);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
-
-    if (!FORMSPREE_CONFIGURED) {
-      setStatus("error");
-      setFormError(
-        "The form isn't connected yet — add your Formspree ID in src/data/business.ts.",
-      );
-      return;
-    }
 
     setStatus("submitting");
     setFormError("");
@@ -107,46 +102,43 @@ export function QuoteForm({ showContactLink = false }: { showContactLink?: boole
             discuss the details. Prefer to talk? Give us a call.
           </p>
 
-          <ul className="mt-8 space-y-4">
-            <li>
-              <a
-                href={telHref}
-                className="inline-flex items-center gap-3 text-white transition-colors hover:text-accent-300"
-              >
+          {/* Secondary card: the contact details that used to live on the
+              separate Contact page. Card radius matches the team/review cards. */}
+          <div className="mt-8 rounded-2xl border border-white/10 bg-navy-950/60 p-6 backdrop-blur-sm">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-navy-400">
+              Or reach us directly
+            </h3>
+            <ul className="mt-4 space-y-4">
+              <li>
+                <a
+                  href={telHref}
+                  className="inline-flex items-center gap-3 text-white transition-colors hover:text-accent-300"
+                >
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+                    <Phone className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="font-semibold">{business.phone}</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href={mailHref}
+                  className="inline-flex items-center gap-3 text-white transition-colors hover:text-accent-300"
+                >
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+                    <Mail className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="font-semibold">{business.email}</span>
+                </a>
+              </li>
+              <li className="inline-flex items-center gap-3 text-navy-300">
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                  <Phone className="h-5 w-5" aria-hidden />
+                  <MapPin className="h-5 w-5" aria-hidden />
                 </span>
-                <span className="font-semibold">{business.phone}</span>
-              </a>
-            </li>
-            <li>
-              <a
-                href={mailHref}
-                className="inline-flex items-center gap-3 text-white transition-colors hover:text-accent-300"
-              >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                  <Mail className="h-5 w-5" aria-hidden />
-                </span>
-                <span className="font-semibold">{business.email}</span>
-              </a>
-            </li>
-            <li className="inline-flex items-center gap-3 text-navy-300">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
-                <MapPin className="h-5 w-5" aria-hidden />
-              </span>
-              <span className="font-medium">{business.serviceArea}</span>
-            </li>
-          </ul>
-
-          {showContactLink && (
-            <Link
-              to="/contact"
-              className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
-            >
-              Get in touch
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          )}
+                <span className="font-medium">{business.serviceArea}</span>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Form card */}

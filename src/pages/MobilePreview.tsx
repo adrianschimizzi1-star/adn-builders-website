@@ -14,7 +14,7 @@ const PAGES = [
   { path: "/services", label: "Services" },
   { path: "/gallery", label: "Projects" },
   { path: "/about", label: "About" },
-  { path: "/contact", label: "Contact" },
+  { path: "/quote", label: "Book a Quote" },
 ];
 
 const DEVICES = [

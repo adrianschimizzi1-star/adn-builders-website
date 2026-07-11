@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ArrowRight } from "lucide-react";
 import { services } from "../data/services";
-import { projects, type GalleryPhoto } from "../data/gallery";
+import { type GalleryTile } from "../data/gallery";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
 import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { useGalleryTiles } from "../hooks/usePhotos";
 
 export default function ServicesPage() {
   usePageMeta(
@@ -14,10 +15,14 @@ export default function ServicesPage() {
     "Renovations & extensions, new home builds, bathrooms, and decks & outdoor — see what each ADN Builders service includes, with recent Canberra projects.",
   );
 
-  // One shared lightbox for every service strip on the page.
-  const [lb, setLb] = useState<{ items: GalleryPhoto[]; index: number } | null>(
+  // One shared lightbox for every service strip on the page. `tile` is the set
+  // being viewed (a project's photos, or a single loose photo).
+  const [lb, setLb] = useState<{ tile: GalleryTile; index: number } | null>(
     null,
   );
+
+  // Live photos + projects from the admin/Blob backend (falls back to the seed).
+  const { tiles } = useGalleryTiles();
 
   return (
     <>
@@ -42,7 +47,7 @@ export default function ServicesPage() {
       {/* Per-service detail blocks */}
       {services.map((service, i) => {
         const Icon = service.icon;
-        const related = projects.filter((p) => p.category === service.category);
+        const related = tiles.filter((t) => t.category === service.category);
         // Soft boundary blend. Blocks alternate navy-950 / navy-900; the header
         // above is navy-950 and the footer below is navy-950, so:
         //   • block 0 (navy-950) only needs to ease its bottom into block 1;
@@ -98,7 +103,7 @@ export default function ServicesPage() {
                   </>
                 )}
 
-                <Button to="/contact" className="mt-8">
+                <Button to="/quote" className="mt-8">
                   Enquire about this service
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Button>
@@ -121,8 +126,8 @@ export default function ServicesPage() {
                 </div>
                 {related.length > 0 ? (
                   <GalleryGrid
-                    photos={related}
-                    onSelect={(index) => setLb({ items: related, index })}
+                    tiles={related}
+                    onSelect={(i) => setLb({ tile: related[i], index: 0 })}
                   />
                 ) : (
                   <p className="text-sm text-navy-400">
@@ -136,8 +141,9 @@ export default function ServicesPage() {
       })}
 
       <Lightbox
-        items={lb?.items ?? []}
+        items={lb?.tile.photos ?? []}
         index={lb ? lb.index : null}
+        title={lb?.tile.title}
         onClose={() => setLb(null)}
         onNavigate={(index) =>
           setLb((cur) => (cur ? { ...cur, index } : cur))

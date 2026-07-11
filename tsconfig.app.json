@@ -20,8 +20,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    /* Paths */
-    "baseUrl": ".",
+    /* Paths — tsconfig-relative, so no (deprecated) `baseUrl` is needed.
+       The matching bundler alias lives in vite.config.ts and must stay in sync. */
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -23,7 +23,8 @@ export interface BusinessInfo {
   email: string;
   licenceNumber: string;
   fullyInsured: boolean;
-  /** Opening hours — shown on the /contact page. */
+  /** Opening hours. Not currently rendered (the Opening Hours card was removed
+   *  in spec 06); kept as a business fact per the data-layer invariant. */
   hours: OpeningHours[];
   social: { instagram: string; facebook: string };
 }
@@ -53,8 +54,8 @@ export const business: BusinessInfo = {
   social: { instagram: "", facebook: "" },
 };
 
-/** Formspree endpoint id. Create a form at https://formspree.io and paste it. */
-export const FORMSPREE_ID = NEEDS_INPUT("your-form-id"); // e.g. "xdorwkbz"
+/** Formspree endpoint id (https://formspree.io/f/mvzjybdn). */
+export const FORMSPREE_ID = "mvzjybdn";
 
 /** Convenience: a normalised tel: href. */
 export const telHref = `tel:${business.phone.replace(/\s+/g, "")}`;

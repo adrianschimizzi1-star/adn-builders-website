@@ -5,7 +5,7 @@ and what still needs the client. Update this file in the same commit
 as any feature (both spec 03 and spec 04 require it). Newest work at
 the top of each phase.
 
-> Last updated: 2026-07-08
+> Last updated: 2026-07-09
 
 ## Legend
 
@@ -23,12 +23,15 @@ the top of each phase.
 | 1 | Charcoal blue-grey retheme (spec `03-colour-revision.md`) | ✅ Done |
 | 2 | Multi-page conversion (spec `04-multipage-fix.md`) | ✅ Done |
 | 3 | Website fixes: blends, reviews, team, deep-links (spec `06-website-fixes-V!.md`) | ✅ Done |
+| 4 | Admin area — password-gated photo uploads (spec `07-admin-setup.md`) | ✅ Done |
+| 5 | Structure, gallery & admin pass (spec `05-website-fixes-v2.md`) | ✅ Done |
 | — | Client content still needed (`NEEDS_INPUT`) | ⏳ Outstanding |
 | — | Live Vercel deploy + hard-refresh check | ⏳ Pending |
 
 Build is green (`npm run build` — `tsc -b` + `vite build`, no type
-errors) after every step below. Every text/background pair meets
-WCAG AA. Routes verified locally on the preview server.
+errors) after every step below; the `/api` functions type-check with
+`npx tsc -p tsconfig.api.json`. Every text/background pair meets WCAG AA.
+Routes + the full admin→public flow verified locally in headless Chrome.
 
 ---
 
@@ -217,7 +220,117 @@ category image as that clickable element, plus a deep-link on the
 hero photo prominence, team grid, compact/full reviews, contact with no
 hours card, and `?cat=` deep-link filtering on direct URL load.
 
+---
+
+## Phase 4 — Admin area (photo uploads) ✅
+
+Spec: `07-admin-setup.md`. Goal: a password-gated `/admin` where the owner
+uploads and manages portfolio photos without a redeploy; photos live in
+Vercel Blob and appear on the live gallery automatically.
+
+- [x] **Serverless auth.** `api/login.ts` + `api/_lib/auth.ts` — password
+      checked **server-side** (constant-time), never sent to the browser;
+      issues an HMAC-signed httpOnly session cookie (8 h). `api/session.ts`
+      + `api/logout.ts` for the is-logged-in check and sign-out.
+- [x] **Photos API + storage.** `api/photos.ts` + `api/_lib/store.ts`:
+      `GET` (public list), `POST`, `PATCH` (edit), `DELETE`. Each photo is
+      **one image blob + one metadata sidecar** (`projects/<id>.json`) — no
+      shared manifest, because Vercel Blob is eventually consistent and a
+      shared read-modify-write file silently drops entries (learned the hard
+      way; commit `02148ff`).
+- [x] **Admin UI + live gallery.** `pages/AdminPage.tsx` (lazy-loaded,
+      `noindex`): drag-drop upload with in-browser downscale/re-encode,
+      category filter, edit modal, delete. `hooks/usePhotos.ts` swaps the
+      live list in over the static seed.
+- [x] **Docs.** `07-admin-setup.md` (Vercel one-time setup: public Blob
+      store + `ADMIN_PASSWORD`/`SESSION_SECRET`).
+
+---
+
+## Phase 5 — Structure, gallery & admin pass ✅
+
+Spec: `05-website-fixes-v2.md` (the "v3" pass). Goal: one clear conversion
+path (Book a Quote), a Projects section that pushes toward it, a gallery
+that respects each photo's native shape and groups photos into projects,
+one shared image source across Home/Services/Projects, the `tsconfig`
+deprecation gone, and an admin that manages **all** editable content — not
+just photos. Implemented one step at a time; `npm run build` +
+`tsc -p tsconfig.api.json` green after each, then driven end-to-end in
+headless Chrome.
+
+- [x] **Step 1 — tsconfig.** Removed the deprecated `baseUrl`; `paths` kept
+      tsconfig-relative (`"@/*": ["./src/*"]`). Found the matching bundler
+      alias was **missing** (the `@/` alias resolved in the editor but would
+      break a real build), so added it to `vite.config.ts`. Proved both agree
+      by temporarily rewriting an import to `@/…` and building.
+- [x] **Step 2 — Projects CTA.** "Want results like these?" + **Book a
+      Quote** block at the foot of both Projects surfaces (home `Gallery`
+      section + `/gallery`). Inlined, not a new shared component (spec §2).
+- [x] **Step 3 — Contact → Book a Quote.** Merged Contact into one page
+      titled **Book a Quote** at `/quote` (form primary, contact details a
+      secondary card, v2 compact reviews kept). Removed the Contact nav item;
+      repointed **every** quote CTA site-wide to `/quote` (nav, hero, about,
+      services, footer, service cards). `/contact` now client-side **redirects**
+      to `/quote` so old links never 404. `ContactPage.tsx` → `QuotePage.tsx`.
+- [x] **Step 4 — Lightbox native aspect ratio.** Rewrote the existing
+      `Lightbox` (the only component the spec authorises touching): the image
+      sizes itself to its **native ratio** with `rounded-2xl` on the img
+      itself (portraits no longer letterboxed), `svh` caps so a tall portrait
+      fits, backdrop/Esc close, prev/next. Added a proper modal **focus trap +
+      focus restore** (review follow-up). Verified against real portrait /
+      landscape / square images, desktop + mobile.
+- [x] **Step 5 — "Other" category.** Added to `galleryFilters`, the
+      `ProjectImage` gradient map, and the server-side `PHOTO_CATEGORIES`
+      whitelist. Filterable, deep-linkable (`?cat=other`), empty-state clean.
+- [x] **Step 6 — One image source.** Home's `Gallery` and `ServiceCard`
+      were reading the **static seed directly**, so admin photos never
+      reached the home page — the core bug. Everything now flows through
+      `usePhotos()`/`useGalleryTiles()` (shared module cache, one fetch per
+      endpoint per load). Verified Home/Services/Projects all render the same
+      admin photos and every Services deep-link resolves to the right
+      category, with zero broken image refs.
+- [x] **Step 7 — Admin expansion (4 managers).** `AdminPage` became a tabbed
+      shell over `pages/admin/{Photos,Projects,Reviews,Team}Panel.tsx`:
+      - **Reviews** — add/edit/delete/reorder (name, stars, quote).
+      - **Projects** — new entity: create/edit/delete, attach photos, reorder
+        photos within a project. Gallery now renders **one tile per project**
+        (cover + count badge) or per loose photo; the lightbox steps through a
+        project's photos. `content/projects.json` owns `photoIds` (membership
+        + order); deleting a photo leaves a dangling id that's skipped on read
+        (no unsafe cascade).
+      - **Image controls** — assign/change category (incl. Other), delete,
+        drag **and** keyboard reorder within a category.
+      - **Team** — edit the four cards (portrait upload, name, description),
+        reorder.
+      New backend: `api/content.ts` (reviews/team/projects, whole-document
+      overwrites — safe on Blob because the client always sends the full
+      list), `api/upload.ts` (team portraits, whitelisted prefix), photo
+      bulk-reorder in `api/photos.ts`. Public reads via `hooks/useSiteContent.ts`
+      with the static `src/data` files as fallback.
+
+Adversarial multi-agent review (5 dimensions × 3 verify lenses). All
+confirmed findings fixed: the ProjectsPanel reorder indexing a filtered list
+into the unfiltered id array (HIGH); new uploads sorting to the gallery
+**end** after any saved order (HIGH); the Lightbox missing a focus trap
+(HIGH a11y); a fetch-lands-while-lightbox-open race in Gallery/GalleryPage;
+`image/svg+xml` accepted by the loose `image/*` check (would be served inline
+from the CDN); a protocol-relative team-photo URL bypassing the origin
+allowlist; plus reorder boundary-focus loss, an upload/reorder race, and a
+missing success-banner live region.
+
+Adaptations to note: (1) the spec's `[TBD]` paths were filled by recon —
+Vite + React 19 + Tailwind v4, Vercel Blob, existing `Lightbox`. (2) "Project
+manager" needed a public reading; chose grouped tiles (cover + count →
+lightbox steps the set), loose photos still tile individually. (3) `/quote`
+chosen as the single destination with a `/contact` redirect rather than
+reusing `/contact`, so URL and page title agree.
+
 ## Outstanding — needs the client (`NEEDS_INPUT`)
+
+> **Now editable in `/admin`** (no code change needed): reviews, team members
+> + photos, projects, and all gallery photos + categories. The `src/data/*`
+> placeholders below only show until the owner enters real content in the
+> admin (or the backend is unreachable).
 
 Search `src/data/` for `NEEDS_INPUT` to find these in code.
 
@@ -249,8 +362,10 @@ Search `src/data/` for `NEEDS_INPUT` to find these in code.
 - [x] No new shared components beyond those the spec named
       (ScrollToTop, Layout, pages, usePageMeta, NotFound)
 - [x] Every page: one `<h1>`, distinct title/meta, scrolls to top
-- [x] Form submits from both Home and `/contact` (same QuoteForm)
-- [x] Context docs updated (ui-context, architecture, overview, tracker)
+- [x] Form submits from both Home and `/quote` (same QuoteForm; `/contact`
+      redirects to `/quote`)
+- [x] Context docs updated (ui-context, architecture, overview, tracker,
+      admin-setup)
 - [~] Deep links survive a hard refresh on the **deployed** site
 
 Spec 06 "Check When Done":
@@ -268,6 +383,30 @@ Spec 06 "Check When Done":
       no service has >4 ticks; hover cue present
 - [x] Animations subtle, fire once, respect `prefers-reduced-motion`
 - [x] All `TODO` placeholders clearly marked for the owner
+
+Spec 05 (v3) "Check When Done":
+
+- [x] Goal met: one Book-a-Quote path, Projects pushes to it, gallery keeps
+      native aspect ratios + "Other", one image source, tsconfig warning gone,
+      admin useful beyond photos
+- [x] Nothing in "Out of Scope" built (no "clients"→"customers", form
+      unchanged, no auth/role changes, no dependency bumps, no new npm deps,
+      only `Lightbox` reworked among shared components)
+- [x] No type errors; `npm run build` + `npx tsc -p tsconfig.api.json` green;
+      `baseUrl` deprecation gone and the `@/` alias resolves in both tsc + vite
+- [x] Exactly one quote CTA destination (`/quote`); Contact nav item removed;
+      `/contact` redirects; nothing duplicated
+- [x] Projects section ends with the Book a Quote CTA
+- [x] Gallery image opens at native aspect ratio, rounded corners, working
+      close/prev/next, mobile-safe, focus-trapped
+- [x] "Other" category exists, filterable, assignable in admin
+- [x] Home/Services/Projects pull from one source; Services deep-links resolve
+      to the right category; zero broken image refs
+- [x] Admin: reviews, projects, image controls, and team all manageable and
+      reflected on the public site after save (verified admin→public e2e)
+- [x] "Clients" wording untouched
+- [x] Each step verified before the next; adversarial review's confirmed
+      findings all fixed and re-verified
 
 ## Dev aids (not part of either spec)
 
