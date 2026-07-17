@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import {
   galleryFilters,
@@ -61,9 +61,12 @@ export function ProjectsPanel({
 
   // Latest draft for the async upload flow — the operator can keep editing other
   // projects while files upload, and attaching against a stale closure would
-  // silently wipe those edits.
+  // silently wipe those edits. Synced in an effect (not during render) so a
+  // discarded concurrent/strict-mode render can't leak into the ref.
   const draftRef = useRef<Project[]>(draft);
-  draftRef.current = draft;
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   // One hidden file input shared by every project's "Upload photos" button.
   const fileInputRef = useRef<HTMLInputElement>(null);
