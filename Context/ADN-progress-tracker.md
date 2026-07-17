@@ -382,8 +382,10 @@ were put to the owner first — all three recommended options chosen.
       attach dropdowns see them immediately. `prettifyName` moved to
       `lib/adminApi.ts` (shared with PhotosPanel).
 - [x] **Follow-up (owner request).** Removed the "Want results like these? /
-      Book a Quote" CTA block from the **home** Projects section; the copy on
-      `/gallery` stays (spec 05's conversion push lives there now).
+      Book a Quote" CTA block from the **home** Projects section, then from
+      `/gallery` too. This deliberately supersedes spec 05's "Projects section
+      ends with the Book a Quote CTA" check — the navbar / hero / about /
+      services CTAs carry the single `/quote` conversion path now.
 - [~] **Owner check on the deployed preview:** log into `/admin` → Projects →
       "Upload photos into this project" with 2–3 photos → confirm they group
       under one tile on the public gallery and the lightbox steps through

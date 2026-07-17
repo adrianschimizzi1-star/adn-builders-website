@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
 import {
   galleryFilters,
   type GalleryCategory,
@@ -8,7 +7,6 @@ import {
 } from "../data/gallery";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
-import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useGalleryTiles } from "../hooks/usePhotos";
 
@@ -112,17 +110,8 @@ export default function GalleryPage() {
             </p>
           )}
 
-          {/* Conversion CTA — mirrors the home Projects section. Inlined rather
-              than extracted: spec 05 authorises no new shared components. */}
-          <div className="reveal mt-12 flex flex-col items-center gap-5 rounded-2xl border border-white/10 bg-navy-900 px-6 py-8 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
-            <p className="text-lg font-semibold text-white sm:text-xl">
-              Want results like these?
-            </p>
-            <Button to="/quote" size="lg" className="shrink-0">
-              Book a Quote
-              <ArrowRight className="h-5 w-5" aria-hidden />
-            </Button>
-          </div>
+          {/* No "Want results like these?" CTA any more (owner request) —
+              the navbar's Book a Quote button carries the conversion path. */}
         </div>
       </section>
 
