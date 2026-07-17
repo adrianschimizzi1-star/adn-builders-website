@@ -28,61 +28,24 @@ export interface TeamMember {
   alt: string;
 }
 
-/**
- * The team grid on the /about page.
- *
- * TODO: replace — the owner will supply four real team members (names,
- * one-to-two line descriptions, and portrait photos). Photos look best as a
- * consistent 4:5 portrait; drop them in /public/team and set each `photo`
- * (undefined renders a placeholder meanwhile). Names/descriptions below are
- * placeholders wrapped in NEEDS_INPUT so they're easy to find.
- */
-export const team: TeamMember[] = [
-  {
-    name: NEEDS_INPUT("Team member one"),
-    description: NEEDS_INPUT(
-      "Role / title — one to two lines on what they do and the experience they bring.",
-    ),
-    alt: "Portrait of an ADN Builders team member",
-  },
-  {
-    name: NEEDS_INPUT("Team member two"),
-    description: NEEDS_INPUT(
-      "Role / title — one to two lines on what they do and the experience they bring.",
-    ),
-    alt: "Portrait of an ADN Builders team member",
-  },
-  {
-    name: NEEDS_INPUT("Team member three"),
-    description: NEEDS_INPUT(
-      "Role / title — one to two lines on what they do and the experience they bring.",
-    ),
-    alt: "Portrait of an ADN Builders team member",
-  },
-  {
-    name: NEEDS_INPUT("Team member four"),
-    description: NEEDS_INPUT(
-      "Role / title — one to two lines on what they do and the experience they bring.",
-    ),
-    alt: "Portrait of an ADN Builders team member",
-  },
-];
+// NOTE: no placeholder team members here any more (spec 08) — the /about
+// "Meet the team" block renders only members entered in the admin, and stays
+// hidden until some exist.
 
 export const about = {
   /** Confirm the real names. */
   builders: NEEDS_INPUT("Anthony & Nato"),
   yearsExperience: "25",
 
-  /** Short bio — used on the home About section. */
+  /** Short bio — used on the home About section (trimmed per spec 08). */
   bio: NEEDS_INPUT(
-    "ADN Builders is a local, hands-on team with more than 25 years of building experience across Canberra. From full renovations and extensions to brand-new family homes, we bring the same commitment to quality workmanship, honest advice, and clear communication to every project. Fully licensed and insured, we treat every build like it's our own.",
+    "We're a local, hands-on team with more than 25 years of building across Canberra. Whatever the project — a renovation, an extension, or a brand-new home — you get honest advice, clear communication, and work we're proud to put our name on.",
   ),
 
-  /** Expanded bio — used on the /about detail page (draft; confirm with client). */
+  /** Expanded bio — /about page (trimmed per spec 08; draft, confirm with client). */
   longBio: [
-    "ADN Builders is a local, family-run building team that has been working across Canberra & the Capital Region for more than 25 years. What started as a small operation has grown on the back of referrals and repeat clients — the kind of reputation you only earn by turning up, doing the work properly, and standing behind it.",
-    "We keep our projects deliberately hands-on. You deal directly with the builders, not a call centre, so decisions are made quickly and nothing gets lost between trades. From renovations and extensions to complete new homes, bathrooms, and outdoor spaces, we manage the whole job and coordinate every trade so you have a single point of responsibility.",
-    "We're fully licensed and insured, and we hold ourselves to the standard we'd want in our own homes. Honest quotes, clear timelines, tidy sites, and workmanship built to last — that's the whole promise.",
+    "ADN Builders is a local, family-run team that's been building across Canberra & the Capital Region for more than 25 years — a reputation grown on referrals and repeat clients.",
+    "You deal directly with the builders, not a call centre. We manage the whole job and every trade, so you have one point of contact from the first site visit to handover — honest quotes, tidy sites, and workmanship built to last.",
   ],
 
   /** How we work, start to finish — shown on the /about detail page. */

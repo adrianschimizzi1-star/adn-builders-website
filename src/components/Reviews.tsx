@@ -4,11 +4,35 @@ import { Button } from "./Button";
 import { SectionHeading } from "./SectionHeading";
 import { useSiteContent } from "../hooks/useSiteContent";
 
+function Stars({ rating, center = false }: { rating: number; center?: boolean }) {
+  return (
+    <div
+      className={`flex gap-0.5 ${center ? "justify-center" : ""}`}
+      role="img"
+      aria-label={`${rating} out of 5 stars`}
+    >
+      {Array.from({ length: 5 }).map((_, s) => (
+        <Star
+          key={s}
+          className={`h-4 w-4 ${
+            s < rating
+              ? "fill-accent-400 text-accent-400"
+              : "fill-navy-700 text-navy-700"
+          }`}
+          aria-hidden
+        />
+      ))}
+    </div>
+  );
+}
+
 /**
  * Reviews block (the only new component spec 06 authorises).
  *
- * `full`    — homepage: up to 4 cards + intro copy.
- * `compact` — /quote: up to 3 cards, tighter header.
+ * `full`     — homepage: up to 4 cards + intro copy.
+ * `compact`  — up to 3 cards, tighter header.
+ * `featured` — /quote (spec 08): one strong quote as a quiet centred banner —
+ *              social proof without a wall of cards on the conversion page.
  *
  * Reviews come from the admin (spec 05, step 7); the static placeholders in
  * `data/reviews.ts` show until the owner has entered real ones. The section
@@ -20,7 +44,7 @@ export function Reviews({
   variant = "full",
   className = "",
 }: {
-  variant?: "full" | "compact";
+  variant?: "full" | "compact" | "featured";
   className?: string;
 }) {
   const compact = variant === "compact";
@@ -28,6 +52,37 @@ export function Reviews({
   const source =
     content.reviews.length > 0 ? content.reviews : fallbackReviews;
   const items = compact ? source.slice(0, 3) : source.slice(0, 4);
+
+  if (variant === "featured") {
+    const review = source[0];
+    if (!review) return null;
+    return (
+      <section id="reviews" className={`scroll-mt-20 py-14 sm:py-20 ${className}`}>
+        <div className="container-page">
+          <figure className="reveal mx-auto max-w-3xl text-center">
+            <Stars rating={review.rating} center />
+            <blockquote className="mt-5 text-xl font-medium leading-relaxed text-white sm:text-2xl">
+              &ldquo;{review.quote}&rdquo;
+            </blockquote>
+            <figcaption className="mt-4 text-sm font-semibold text-navy-300">
+              — {review.name}
+            </figcaption>
+            {googleReviewsUrl && (
+              <a
+                href={googleReviewsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
+              >
+                Read more on Google
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </a>
+            )}
+          </figure>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="reviews" className={`scroll-mt-20 py-16 sm:py-24 ${className}`}>
@@ -61,23 +116,7 @@ export function Reviews({
                 key={i}
                 className="reveal flex h-full flex-col rounded-2xl border border-white/10 bg-navy-900 p-6"
               >
-                <div
-                  className="flex gap-0.5"
-                  role="img"
-                  aria-label={`${review.rating} out of 5 stars`}
-                >
-                  {Array.from({ length: 5 }).map((_, s) => (
-                    <Star
-                      key={s}
-                      className={`h-4 w-4 ${
-                        s < review.rating
-                          ? "fill-accent-400 text-accent-400"
-                          : "fill-navy-700 text-navy-700"
-                      }`}
-                      aria-hidden
-                    />
-                  ))}
-                </div>
+                <Stars rating={review.rating} />
                 <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-navy-200">
                   &ldquo;{review.quote}&rdquo;
                 </blockquote>

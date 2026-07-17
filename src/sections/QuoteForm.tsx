@@ -95,7 +95,7 @@ export function QuoteForm() {
             Get in touch
           </p>
           <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Request a free, no-obligation quote
+            Request a quote from us
           </h2>
           <p className="mt-4 max-w-md text-base leading-relaxed text-navy-300 sm:text-lg">
             Tell us a little about your project and we'll get back to you to

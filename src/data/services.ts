@@ -19,17 +19,20 @@ export interface Service {
   included?: string[];
 }
 
-/** The four services from the brief. */
+/**
+ * The four services from the brief. Copy deliberately short and plain-spoken
+ * (spec 08): show we're good at what we do without the marketing fluff.
+ */
 export const services: Service[] = [
   {
     id: "renovations",
     title: "Renovations & Extensions",
     description:
-      "Transform and grow your home — from single-room refreshes to full extensions that add space, light, and lasting value.",
+      "Single rooms to full extensions — planned well, built properly, finished to last.",
     icon: Hammer,
     category: "renovations",
     longDescription:
-      "Whether you're reworking a tired floor plan or adding a whole new wing, we manage renovations and extensions end to end. We work with you (and your architect or designer, if you have one) to open up living spaces, bring in natural light, and make sure the new work sits seamlessly against the old. Every job is planned around your budget and how you actually live in the home.",
+      "We handle renovations and extensions end to end — planning, approvals, trades, and the build itself. New work sits cleanly against old, the job runs to the plan we agreed, and you deal with one builder the whole way through.",
     // Capped at 4 (spec 06): dropped "Design and planning support" as the most
     // generic of the five.
     included: [
@@ -43,11 +46,11 @@ export const services: Service[] = [
     id: "new-builds",
     title: "New Home Builds",
     description:
-      "Ground-up construction of quality homes, managed end to end with clear communication and a finish you'll be proud of.",
+      "Your new home built from the ground up, with one point of contact the whole way.",
     icon: House,
     category: "new-builds",
     longDescription:
-      "Building a new home is the biggest project most people take on, so we keep it clear and predictable from the first site meeting to the final walk-through. You get a single point of contact, a realistic schedule, and honest advice on where your money is best spent. The result is a solid, well-finished home built to the standards we'd want for our own families.",
+      "A new home is a big undertaking, so we keep it simple: one point of contact, a realistic schedule, and straight answers on where your money is best spent. The result is a solid, well-finished home — the standard we'd want for our own families.",
     // Capped at 4 (spec 06): dropped "Licensed trades coordinated on your
     // behalf" — implied by full end-to-end management.
     included: [
@@ -61,11 +64,11 @@ export const services: Service[] = [
     id: "bathrooms",
     title: "Bathrooms",
     description:
-      "Beautiful, functional bathroom renovations — waterproofing, tiling, and fit-out handled by experienced trades.",
+      "Waterproofing, tiling, and fit-out done right the first time.",
     icon: Bath,
     category: "bathrooms",
     longDescription:
-      "A bathroom is small but unforgiving — get the waterproofing or fall wrong and you pay for it later. We handle the whole renovation with experienced trades, from stripping out the old room to the final silicone bead, so it looks sharp and stays watertight for the long haul.",
+      "Bathrooms are small rooms with no margin for error. We strip out the old, waterproof properly, tile straight, and fit off cleanly — so it looks sharp on day one and stays watertight for years.",
     // Capped at 4 (spec 06): dropped "Underfloor heating (optional)" as the
     // only optional, non-core item.
     included: [
@@ -79,11 +82,11 @@ export const services: Service[] = [
     id: "outdoor",
     title: "Decks, Fencing & Outdoor",
     description:
-      "Decks, pergolas, fencing, and outdoor living spaces designed for Canberra conditions and made to enjoy year-round.",
+      "Decks, pergolas, and fences built to handle Canberra's seasons.",
     icon: Fence,
     category: "outdoor",
     longDescription:
-      "Canberra's summers and frosts are hard on outdoor timber, so we build decks, pergolas, and fences to handle it — properly detailed, correctly fixed, and finished to last. From an entertaining deck off the living room to a full backyard makeover, we design outdoor spaces you'll actually use through the seasons.",
+      "Canberra summers and frosts are hard on outdoor timber, so we build decks, pergolas, and fences to take it — properly detailed, correctly fixed, and finished to last. Outdoor spaces you'll actually use, year-round.",
     // Capped at 4 (spec 06): dropped "Weatherproof, low-maintenance finishes"
     // as the most generic marketing line.
     included: [

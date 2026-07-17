@@ -1,12 +1,18 @@
-import { useState } from "react";
-import { Loader2, Plus, Save, Trash2, X } from "lucide-react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import {
   galleryFilters,
   type PhotoCategory,
   type Project,
 } from "../../data/gallery";
 import { Button } from "../../components/Button";
-import { saveContent, type ServerPhoto } from "../../lib/adminApi";
+import {
+  prettifyName,
+  resizeImage,
+  saveContent,
+  uploadPhoto,
+  type ServerPhoto,
+} from "../../lib/adminApi";
 import { DragHandle, ReorderButtons, move, useDragReorder } from "./reorder";
 
 const CATEGORY_OPTIONS = galleryFilters.filter((f) => f.id !== "all");
@@ -21,24 +27,50 @@ function newProjectId(): string {
  * `photoIds` is the single source of truth for both membership and the order the
  * photos appear in the public lightbox. A photo belongs to at most one project:
  * attaching it here detaches it from any other project first.
+ *
+ * Two ways to fill a project (spec 08):
+ * 1. Attach photos already uploaded in the Photos tab, one at a time.
+ * 2. "Upload photos into this project" — pick several files at once; they
+ *    upload, join this project, and the project is saved in one step.
  */
 export function ProjectsPanel({
   projects,
   photos,
   onSaved,
+  onPhotosUploaded,
   onError,
   onNotice,
 }: {
   projects: Project[];
   photos: ServerPhoto[];
   onSaved: (projects: Project[]) => void;
+  /** New photos created by a direct-into-project upload — parent adds them to its list. */
+  onPhotosUploaded: (uploaded: ServerPhoto[]) => void;
   onError: (msg: string) => void;
   onNotice: (msg: string) => void;
 }) {
   const [draft, setDraft] = useState<Project[]>(projects);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<{
+    projectId: string;
+    done: number;
+    total: number;
+  } | null>(null);
   const dirty = JSON.stringify(draft) !== JSON.stringify(projects);
   const drag = useDragReorder(draft, setDraft);
+
+  // Latest draft for the async upload flow — the operator can keep editing other
+  // projects while files upload, and attaching against a stale closure would
+  // silently wipe those edits. Synced in an effect (not during render) so a
+  // discarded concurrent/strict-mode render can't leak into the ref.
+  const draftRef = useRef<Project[]>(draft);
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
+
+  // One hidden file input shared by every project's "Upload photos" button.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTargetRef = useRef<string | null>(null);
 
   const photoById = new Map(photos.map((p) => [p.id, p]));
   const attachedElsewhere = (projectIndex: number) =>
@@ -57,6 +89,105 @@ export function ProjectsPanel({
           : { ...p, photoIds: p.photoIds.filter((id) => id !== photoId) },
       ),
     );
+  }
+
+  function pickFilesFor(projectId: string) {
+    uploadTargetRef.current = projectId;
+    fileInputRef.current?.click();
+  }
+
+  function onFilesPicked(e: ChangeEvent<HTMLInputElement>) {
+    const projectId = uploadTargetRef.current;
+    if (e.target.files && projectId) {
+      void uploadInto(projectId, Array.from(e.target.files));
+    }
+    e.target.value = "";
+  }
+
+  /**
+   * Uploads several files and puts them straight into one project: resize →
+   * upload each → append their ids to the project's `photoIds` → save the
+   * projects document. One action, live on the site at the end of it.
+   */
+  async function uploadInto(projectId: string, files: File[]) {
+    const project = draftRef.current.find((p) => p.id === projectId);
+    const images = files.filter((f) => f.type.startsWith("image/"));
+    if (!project || images.length === 0 || uploading) return;
+    if (!project.title.trim()) {
+      onError("Give this project a title before uploading photos into it.");
+      return;
+    }
+    setUploading({ projectId, done: 0, total: images.length });
+    onError("");
+    onNotice("");
+
+    const uploaded: ServerPhoto[] = [];
+    let failed = 0;
+    for (let i = 0; i < images.length; i++) {
+      try {
+        const { dataBase64, contentType } = await resizeImage(images[i]);
+        uploaded.push(
+          await uploadPhoto({
+            dataBase64,
+            contentType,
+            title: prettifyName(images[i].name) || "Untitled",
+            // Photos inherit the project's category so the gallery files the
+            // tile and its photos under the same filter.
+            category: project.category,
+            alt: "",
+          }),
+        );
+      } catch {
+        failed++;
+      }
+      setUploading({ projectId, done: i + 1, total: images.length });
+    }
+
+    if (uploaded.length === 0) {
+      setUploading(null);
+      onError("Those photos couldn't be uploaded — please try again.");
+      return;
+    }
+    onPhotosUploaded(uploaded);
+
+    // Attach against the *latest* draft (the operator may have kept editing),
+    // then save so the grouping is live immediately — not stuck as a dirty draft.
+    const base = draftRef.current;
+    if (!base.some((p) => p.id === projectId)) {
+      // Project deleted mid-upload: the photos exist as loose gallery photos.
+      setUploading(null);
+      onError(
+        "That project was deleted while the photos uploaded — they're in the gallery as individual photos.",
+      );
+      return;
+    }
+    const nextDraft = base.map((p) =>
+      p.id === projectId
+        ? { ...p, photoIds: [...p.photoIds, ...uploaded.map((u) => u.id)] }
+        : p,
+    );
+    setDraft(nextDraft);
+    try {
+      const saved = await saveContent("projects", nextDraft);
+      onSaved(saved);
+      setDraft(saved);
+      onNotice(
+        failed > 0
+          ? `${uploaded.length} of ${images.length} photos added to “${project.title}” — ${failed} failed, please try those again.`
+          : `${uploaded.length} photo${uploaded.length > 1 ? "s" : ""} added to “${project.title}” — live on the site now.`,
+      );
+    } catch (err) {
+      // Keep the actionable hint even when the server sent an error message —
+      // the photos are up, only the grouping still needs a save.
+      const detail = (err as Error).message;
+      onError(
+        `Photos uploaded, but the project didn't save — press “Save projects” to finish.${
+          detail ? ` (${detail})` : ""
+        }`,
+      );
+    } finally {
+      setUploading(null);
+    }
   }
 
   async function save() {
@@ -274,33 +405,54 @@ export function ProjectsPanel({
                       )}
                     </div>
 
-                    {/* Attach */}
-                    {available.length > 0 && (
-                      <div>
-                        <label
-                          htmlFor={`proj-add-${project.id}`}
-                          className="mb-1.5 block text-sm font-semibold text-navy-800"
-                        >
-                          Attach a photo
-                        </label>
-                        <select
-                          id={`proj-add-${project.id}`}
-                          value=""
-                          disabled={saving}
-                          onChange={(e) => {
-                            if (e.target.value) attach(i, e.target.value);
-                          }}
-                          className="w-full rounded-lg border border-navy-200 bg-white px-4 py-2.5 text-navy-900 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30 sm:max-w-sm"
-                        >
-                          <option value="">Choose a photo…</option>
-                          {available.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.title}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                    {/* Fill the project: attach an existing photo, or upload
+                        new ones straight into it (spec 08). */}
+                    <div className="flex flex-wrap items-end gap-3">
+                      {available.length > 0 && (
+                        <div>
+                          <label
+                            htmlFor={`proj-add-${project.id}`}
+                            className="mb-1.5 block text-sm font-semibold text-navy-800"
+                          >
+                            Attach a photo
+                          </label>
+                          <select
+                            id={`proj-add-${project.id}`}
+                            value=""
+                            disabled={saving || uploading !== null}
+                            onChange={(e) => {
+                              if (e.target.value) attach(i, e.target.value);
+                            }}
+                            className="w-full rounded-lg border border-navy-200 bg-white px-4 py-2.5 text-navy-900 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/30 sm:w-auto sm:min-w-52"
+                          >
+                            <option value="">Choose a photo…</option>
+                            {available.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        disabled={saving || uploading !== null}
+                        onClick={() => pickFilesFor(project.id)}
+                        className="inline-flex items-center gap-2 rounded-lg border border-navy-300 bg-navy-50 px-4 py-2.5 text-sm font-semibold text-navy-800 transition-colors hover:bg-navy-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {uploading?.projectId === project.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                            Uploading {uploading.done}/{uploading.total}…
+                          </>
+                        ) : (
+                          <>
+                            <ImagePlus className="h-4 w-4" aria-hidden />
+                            Upload photos into this project
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <button
@@ -319,8 +471,23 @@ export function ProjectsPanel({
         </ul>
       )}
 
+      {/* Shared picker for every project's "Upload photos into this project". */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={onFilesPicked}
+      />
+
       <div className="mt-6 flex items-center gap-3">
-        <Button type="button" size="lg" onClick={save} disabled={saving || !dirty}>
+        <Button
+          type="button"
+          size="lg"
+          onClick={save}
+          disabled={saving || uploading !== null || !dirty}
+        >
           {saving ? (
             <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
           ) : (

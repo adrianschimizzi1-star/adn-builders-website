@@ -11,7 +11,7 @@ export function Services() {
   const { tiles } = useGalleryTiles();
 
   return (
-    <section id="services" className="scroll-mt-20 bg-navy-950 py-16 sm:py-24">
+    <section id="services" className="scroll-mt-20 bg-navy-950 pb-10 pt-16 sm:py-24">
       <div className="container-page">
         <SectionHeading
           eyebrow="What we do"
@@ -32,7 +32,9 @@ export function Services() {
           ))}
         </div>
 
-        <div className="mt-10">
+        {/* Tighter on mobile (spec 08): this link + the section paddings were
+            stacking into a big dead zone before the "Our work" heading. */}
+        <div className="mt-8 sm:mt-10">
           <Link
             to="/services"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"
