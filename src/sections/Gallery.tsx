@@ -27,15 +27,20 @@ export function Gallery() {
   const visible =
     filter === "all" ? tiles : tiles.filter((t) => t.category === filter);
 
+  // Home shows at most six recent tiles (spec 08); the rest live on /gallery.
+  // When there's more, the last row fades out into the "View all Projects" link.
+  const shown = visible.slice(0, 6);
+  const overflowing = visible.length > shown.length;
+
   function select(index: number) {
-    setOpenSet(visible[index]);
+    setOpenSet(shown[index]);
     setPhotoIndex(0);
   }
 
   return (
     <section
       id="gallery"
-      className="fade-y-in-950 scroll-mt-20 bg-navy-900 py-16 sm:py-24"
+      className="fade-y-in-950 scroll-mt-20 bg-navy-900 pb-16 pt-10 sm:py-24"
     >
       <div className="container-page">
         <SectionHeading
@@ -69,8 +74,16 @@ export function Gallery() {
           })}
         </div>
 
-        <div className="reveal mt-8">
-          <GalleryGrid tiles={visible} onSelect={select} />
+        <div className="reveal relative mt-8">
+          <GalleryGrid tiles={shown} onSelect={select} />
+          {/* The capped grid's last row eases out into the section background,
+              leading the eye to the View-all link below. */}
+          {overflowing && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-900 via-navy-900/70 to-transparent"
+            />
+          )}
         </div>
 
         {visible.length === 0 && (
@@ -79,7 +92,7 @@ export function Gallery() {
           </p>
         )}
 
-        <div className="mt-10">
+        <div className={overflowing ? "-mt-2 text-center" : "mt-10 text-center"}>
           <Link
             to="/gallery"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 transition-colors hover:text-accent-300"

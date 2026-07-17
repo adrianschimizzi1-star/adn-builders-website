@@ -314,6 +314,10 @@ export default function AdminPage() {
                 projects={content.projects}
                 photos={photos}
                 onSaved={(projects) => setContent((c) => ({ ...c, projects }))}
+                // Direct-into-project uploads: newest first, same as PhotosPanel.
+                onPhotosUploaded={(uploaded) =>
+                  setPhotos((prev) => [...uploaded, ...prev])
+                }
                 onError={setError}
                 onNotice={setNotice}
               />

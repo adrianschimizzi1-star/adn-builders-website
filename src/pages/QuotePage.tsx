@@ -39,8 +39,9 @@ export default function QuotePage() {
       {/* Form (primary) + contact details card (secondary) */}
       <QuoteForm />
 
-      {/* v2's compact reviews, kept per spec */}
-      <Reviews variant="compact" className="fade-t-from-900 bg-navy-950" />
+      {/* One featured quote instead of the 3-card grid (spec 08) — the card
+          wall felt forced on the conversion page. */}
+      <Reviews variant="featured" className="fade-t-from-900 bg-navy-950" />
     </>
   );
 }

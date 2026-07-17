@@ -27,6 +27,7 @@ import { Button } from "../../components/Button";
 import { TextInput, SelectInput } from "../../components/FormInputs";
 import {
   deletePhoto,
+  prettifyName,
   reorderPhotos,
   resizeImage,
   updatePhoto,
@@ -44,14 +45,6 @@ const DEFAULT_CATEGORY: PhotoCategory = CATEGORY_OPTIONS[0].id;
 
 function categoryLabel(id: string): string {
   return galleryFilters.find((f) => f.id === id)?.label ?? id;
-}
-
-/** "kitchen-reno_final.jpg" -> "kitchen reno final" */
-function prettifyName(name: string): string {
-  return name
-    .replace(/\.[^.]+$/, "")
-    .replace(/[-_]+/g, " ")
-    .trim();
 }
 
 interface Draft {

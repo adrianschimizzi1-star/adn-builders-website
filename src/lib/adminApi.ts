@@ -159,6 +159,14 @@ export async function uploadImage(input: {
   return url;
 }
 
+/** "kitchen-reno_final.jpg" -> "kitchen reno final" — default titles for uploads. */
+export function prettifyName(name: string): string {
+  return name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
+}
+
 /**
  * Downscales + re-encodes an image to JPEG in the browser before upload:
  * keeps files small (fast uploads, less storage) and safely under the API's

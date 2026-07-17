@@ -1,6 +1,6 @@
 import { User, ArrowRight } from "lucide-react";
 import { business } from "../data/business";
-import { about, team as fallbackTeam } from "../data/about";
+import { about } from "../data/about";
 import { Button } from "../components/Button";
 import { usePageMeta } from "../hooks/usePageMeta";
 import { useSiteContent } from "../hooks/useSiteContent";
@@ -11,10 +11,11 @@ export default function AboutPage() {
     "Meet the team behind ADN Builders — 25+ years of licensed, insured building experience in Canberra, and how we work from first call to handover.",
   );
 
-  // Team cards come from the admin (spec 05, step 7); the placeholders in
-  // data/about.ts show until the owner has entered real members.
+  // Team cards come from the admin (spec 05, step 7). No placeholder fallback:
+  // the whole "Meet the team" block stays hidden until real members are entered
+  // (spec 08).
   const { content } = useSiteContent();
-  const team = content.team.length > 0 ? content.team : fallbackTeam;
+  const team = content.team;
 
   return (
     <>
@@ -66,19 +67,20 @@ export default function AboutPage() {
             </div>
           </div>
 
-          {/* Team grid — replaces the old licence/insured badges + tick list.
-              TODO: replace placeholder members (names, descriptions, photos)
-              in src/data/about.ts. Card + image share the same rounded-2xl. */}
+          {/* Team grid — admin-entered members only; hidden until some exist
+              (spec 08). Centred flex (not a grid) so a partial row — say three
+              members — sits centred instead of leaving a hole. */}
+          {team.length > 0 && (
           <div className="mt-14">
             <p className="text-sm font-semibold uppercase tracking-wide text-navy-400">
               Meet the team
             </p>
-            <div className="reveal-stagger mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="reveal-stagger mt-6 flex flex-wrap justify-center gap-6">
               {team.map((member, i) => (
                 <article
                   // Owner-entered names aren't guaranteed unique.
                   key={`${member.name}-${i}`}
-                  className="reveal group overflow-hidden rounded-2xl border border-white/10 bg-navy-900 transition-colors hover:border-accent-500/40"
+                  className="reveal group w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-navy-900 transition-colors hover:border-accent-500/40 sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]"
                 >
                   <div className="aspect-[4/5] w-full overflow-hidden bg-navy-800">
                     {member.photo ? (
@@ -100,9 +102,6 @@ export default function AboutPage() {
                           strokeWidth={1.5}
                           aria-hidden
                         />
-                        <span className="text-xs uppercase tracking-wide opacity-70">
-                          Photo — TODO
-                        </span>
                       </div>
                     )}
                   </div>
@@ -118,6 +117,7 @@ export default function AboutPage() {
               ))}
             </div>
           </div>
+          )}
         </div>
       </section>
 

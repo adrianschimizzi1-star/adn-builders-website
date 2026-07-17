@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck, BadgeCheck, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { business } from "../data/business";
 import { about } from "../data/about";
 import { SectionHeading } from "../components/SectionHeading";
@@ -50,32 +50,8 @@ export function About() {
             {about.bio}
           </p>
 
-          {/* Credentials */}
-          <dl className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-navy-900 p-4">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent-400" aria-hidden />
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                  Licence
-                </dt>
-                <dd className="text-sm font-semibold text-white">
-                  {business.licenceNumber}
-                </dd>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-navy-900 p-4">
-              <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-accent-400" aria-hidden />
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-navy-400">
-                  Insurance
-                </dt>
-                <dd className="text-sm font-semibold text-white">
-                  {business.fullyInsured ? "Fully insured" : "—"}
-                </dd>
-              </div>
-            </div>
-          </dl>
-
+          {/* Spec 08: no licence/insured cards here — those credentials live in
+              the hero trust strip (with the licence number) and the footer. */}
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
             <Button to="/quote" size="lg">
               Book a Quote

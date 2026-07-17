@@ -38,18 +38,10 @@ export function Hero() {
       />
 
       <div className="container-page relative flex min-h-[100svh] flex-col justify-center py-28">
-        <p className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-accent-300 backdrop-blur">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
-          {business.serviceArea}
-        </p>
-
-        <h1 className="max-w-3xl">
-          <span className="mb-3 block text-base font-bold uppercase tracking-[0.2em] text-accent-400">
-            {business.name}
-          </span>
-          <span className="block text-4xl font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
-            {business.tagline}
-          </span>
+        {/* Spec 08: no service-area pill or brand eyebrow above the headline —
+            the logo carries the name, the headline carries the message. */}
+        <h1 className="max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl">
+          {business.tagline}
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-relaxed text-navy-100 sm:text-lg">
@@ -68,15 +60,16 @@ export function Hero() {
           </Button>
         </div>
 
-        {/* Trust strip */}
-        <ul className="mt-12 flex flex-wrap gap-x-8 gap-y-3 text-sm text-navy-200">
+        {/* Trust strip — carries the credentials the old team-block cards held
+            (spec 08): the real licence number, right where the page opens. */}
+        <ul className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-navy-200 sm:mt-12">
           <li className="inline-flex items-center gap-2">
             <Award className="h-5 w-5 text-accent-400" aria-hidden />
             {about.yearsExperience}+ years experience
           </li>
           <li className="inline-flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-accent-400" aria-hidden />
-            Licensed &amp; fully insured
+            {business.licenceNumber} &middot; Fully insured
           </li>
           <li className="inline-flex items-center gap-2">
             <MapPin className="h-5 w-5 text-accent-400" aria-hidden />

@@ -5,7 +5,7 @@ and what still needs the client. Update this file in the same commit
 as any feature (both spec 03 and spec 04 require it). Newest work at
 the top of each phase.
 
-> Last updated: 2026-07-09
+> Last updated: 2026-07-18
 
 ## Legend
 
@@ -25,8 +25,10 @@ the top of each phase.
 | 3 | Website fixes: blends, reviews, team, deep-links (spec `06-website-fixes-V!.md`) | ✅ Done |
 | 4 | Admin area — password-gated photo uploads (spec `07-admin-setup.md`) | ✅ Done |
 | 5 | Structure, gallery & admin pass (spec `05-website-fixes-v2.md`) | ✅ Done |
+| 6 | Website fixes 2: hero, copy, 6-tile gallery, featured review, project uploads (spec `08-website-fixes-2.md`) | ✅ Done |
 | — | Client content still needed (`NEEDS_INPUT`) | ⏳ Outstanding |
 | — | Live Vercel deploy + hard-refresh check | ⏳ Pending |
+| — | Admin "upload photos into this project" checked on the live/preview deploy | ⏳ Pending (owner) |
 
 Build is green (`npm run build` — `tsc -b` + `vite build`, no type
 errors) after every step below; the `/api` functions type-check with
@@ -325,6 +327,77 @@ lightbox steps the set), loose photos still tile individually. (3) `/quote`
 chosen as the single destination with a `/contact` redirect rather than
 reusing `/contact`, so URL and page title agree.
 
+## Phase 6 — Website fixes 2 ✅
+
+Spec: `08-website-fixes-2.md`. Goal: a hero about the *builders* rather than
+the work, tighter and simpler copy site-wide, a six-tile home gallery that
+fades into "View all Projects", credentials moved out of the team block, a
+single featured review on /quote, a team section that stays hidden until real
+members exist, and an admin control that uploads several photos straight into
+one project. Taste calls (hero title, review treatment, licence placement)
+were put to the owner first — all three recommended options chosen.
+
+- [x] **Hero.** Removed the service-area pill and the "ADN BUILDERS" eyebrow;
+      new headline **"Builders you can trust, start to finish"**
+      (`business.tagline` — reads correctly in the footer sentence too).
+      "Licensed and fully insured," dropped from the intro; the trust strip
+      now carries the real credential: `ACT Builder Licence #20181053 ·
+      Fully insured`. Trust-strip gap tightened on mobile (`mt-8 sm:mt-12`).
+- [x] **Services → "Our work" spacing (mobile).** The stacked paddings made a
+      ~128px dead zone on phones. Now `pb-10`/`pt-10` + `mt-8` on mobile
+      (~72px); desktop unchanged (`sm:py-24`).
+- [x] **Home gallery capped at 6.** `Gallery` renders at most six tiles
+      (`visible.slice(0, 6)`); when more exist, the last row fades into the
+      section background (gradient overlay) and the now-centred "View all
+      Projects" link sits at the seam. No fade when six or fewer — nothing
+      false to tease. Verified with 8 seed photos: 6 rendered, fade present.
+- [x] **Home team block.** Licence/insurance credential cards deleted (hero
+      trust strip + footer carry them); `about.bio` trimmed to two sentences.
+      `/about` `longBio` trimmed 3 → 2 shorter paragraphs.
+- [x] **Quote title.** The shared QuoteForm heading is now **"Request a quote
+      from us"** (home + /quote; the /quote h1 "Book a Quote" is unchanged).
+- [x] **Services copy.** All four `description`s + `longDescription`s
+      rewritten shorter and plain-spoken — no corporate fluff, confidence
+      kept. "What's included" lists untouched.
+- [x] **Team grid.** No placeholder fallback any more (placeholder `team[]`
+      deleted from `about.ts`): the whole "Meet the team" block is hidden
+      until members are entered in `/admin`. Grid → centred `flex-wrap`, so a
+      partial row (e.g. three people) centres instead of leaving a hole.
+      Photo-less members show a neutral icon (no "TODO" text).
+- [x] **/quote reviews.** New `featured` variant on `Reviews`: one strong
+      quote as a quiet centred banner (stars, quote, name) instead of the
+      3-card grid the owner felt was forced. Google link only renders once
+      `googleReviewsUrl` is set. Card variants unchanged on Home.
+- [x] **Admin — upload photos into a project.** `ProjectsPanel` gains an
+      "Upload photos into this project" button per project (shared hidden
+      multi-file input): each file is downscaled, uploaded (inheriting the
+      project's category), attached to the project's `photoIds`, and the
+      projects document is **auto-saved** — one action, live at the end.
+      Guards: project must have a title first; attach resolves against the
+      latest draft (not a stale closure) so edits made during a slow upload
+      survive; project deleted mid-upload → photos remain as loose gallery
+      photos with a clear message; save failure keeps the attachment as a
+      dirty draft ("press Save projects to finish"). New photos are also
+      handed up to the shell (`onPhotosUploaded`) so the Photos tab and
+      attach dropdowns see them immediately. `prettifyName` moved to
+      `lib/adminApi.ts` (shared with PhotosPanel).
+- [~] **Owner check on the deployed preview:** log into `/admin` → Projects →
+      "Upload photos into this project" with 2–3 photos → confirm they group
+      under one tile on the public gallery and the lightbox steps through
+      them. (Not drivable locally: the serverless API + `ADMIN_PASSWORD`
+      only exist on Vercel.)
+
+Verified locally in headless Chrome (dev server, screenshots + rendered-DOM
+assertions on `/`, `/services`, `/about`, `/quote`, `/admin`, `/preview`);
+`npm run build` + `npx tsc -p tsconfig.api.json` green.
+
+Adaptations to note: (1) "include licence/insured in the actual home page
+area" → the hero trust strip was upgraded to show the licence *number*
+(owner-approved option) rather than adding a new home-page block. (2) The
+public multi-photo behaviour (project tile + lightbox stepping) already
+existed from spec 05 — spec 08's gap was the missing one-step admin control,
+which is what was built.
+
 ## Outstanding — needs the client (`NEEDS_INPUT`)
 
 > **Now editable in `/admin`** (no code change needed): reviews, team members
@@ -335,21 +408,21 @@ reusing `/contact`, so URL and page title agree.
 Search `src/data/` for `NEEDS_INPUT` to find these in code.
 
 - [x] **Licence number** — `business.ts` → `ACT Builder Licence #20181053`
-- [ ] **Formspree form ID** — `business.ts` (`FORMSPREE_ID`); form
-      shows a clear "not connected yet" error until set
+- [x] **Formspree form ID** — `business.ts` `FORMSPREE_ID = "mvzjybdn"`
+      (connected; live-submit check still worth doing once deployed)
 - [ ] **Builder names + bio** — `about.ts` (`builders`, `bio`,
       `longBio` are inferred drafts — confirm "Anthony & Nato")
 - [ ] **Opening hours** — `business.ts` `hours` are sensible defaults;
       confirm the real ones
 - [ ] **Hero photo** — drop `public/projects/hero-bathroom.jpg`
       (falls back to a dark gradient until then)
-- [ ] **Gallery photos** — add images to `public/projects/` and set
-      `src` on entries in `gallery.ts` (placeholders show meanwhile)
-- [ ] **Team members** — `about.ts` `team[]`: 4 real names +
-      descriptions + portrait photos (drop in `public/team/`, set
-      `photo`). Placeholder cards show meanwhile.
-- [ ] **Reviews** — `reviews.ts` `reviews[]`: real first names, ratings,
-      and quotes (placeholders show meanwhile)
+- [ ] **Gallery photos** — upload real project photos in `/admin`
+      (static seed placeholders show meanwhile)
+- [ ] **Team members** — enter in `/admin` → Team (names, descriptions,
+      portraits). The /about "Meet the team" block stays **hidden** until
+      at least one member exists (spec 08) — no placeholders any more.
+- [ ] **Reviews** — enter in `/admin` → Reviews (`reviews.ts` placeholders
+      show meanwhile, including the featured one on /quote)
 - [ ] **Google reviews URL** — `reviews.ts` `googleReviewsUrl`: ADN's
       Google Business reviews page (the "Read more on Google" button falls
       back to `#` until set)

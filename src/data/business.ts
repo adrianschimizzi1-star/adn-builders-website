@@ -31,9 +31,12 @@ export interface BusinessInfo {
 
 export const business: BusinessInfo = {
   name: "ADN Builders",
-  tagline: "Quality renovations and new builds in Canberra",
+  // Spec 08: headline is about the builders, not the work. "Licensed and fully
+  // insured" moved out of the intro — it lives in the hero trust strip (with the
+  // licence number) and the footer instead.
+  tagline: "Builders you can trust, start to finish",
   intro:
-    "Licensed and fully insured, we bring craftsmanship and care to every renovation, extension, and new home across Canberra.",
+    "We bring craftsmanship and care to every renovation, extension, and new home across Canberra.",
   serviceArea: "Canberra & the Capital Region",
 
   // --- Contact ---
