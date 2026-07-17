@@ -9,7 +9,6 @@ import {
 import { SectionHeading } from "../components/SectionHeading";
 import { GalleryGrid } from "../components/GalleryGrid";
 import { Lightbox } from "../components/Lightbox";
-import { Button } from "../components/Button";
 import { useGalleryTiles } from "../hooks/usePhotos";
 
 export function Gallery() {
@@ -102,18 +101,8 @@ export function Gallery() {
           </Link>
         </div>
 
-        {/* Conversion CTA — the Projects section's job is to push toward a quote.
-            Inlined rather than extracted: spec 05 authorises no new shared
-            components beyond Lightbox. */}
-        <div className="reveal mt-12 flex flex-col items-center gap-5 rounded-2xl border border-white/10 bg-navy-950 px-6 py-8 text-center sm:flex-row sm:justify-between sm:gap-8 sm:text-left">
-          <p className="text-lg font-semibold text-white sm:text-xl">
-            Want results like these?
-          </p>
-          <Button to="/quote" size="lg" className="shrink-0">
-            Book a Quote
-            <ArrowRight className="h-5 w-5" aria-hidden />
-          </Button>
-        </div>
+        {/* No "Want results like these?" CTA here any more (owner request,
+            after spec 08) — /gallery keeps its copy. */}
       </div>
 
       <Lightbox
