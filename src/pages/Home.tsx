@@ -24,7 +24,7 @@ export default function Home() {
       <Services />
       <Gallery />
       <About />
-      <Reviews className="fade-t-from-950 bg-navy-900" />
+      <Reviews className="fade-t-from-950 border-t border-white/10 bg-navy-900 sm:border-t-0" />
       <QuoteForm />
     </>
   );

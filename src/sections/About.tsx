@@ -9,7 +9,7 @@ export function About() {
   return (
     <section
       id="about"
-      className="fade-y-in-900 scroll-mt-20 bg-navy-950 py-16 sm:py-24"
+      className="fade-y-in-900 scroll-mt-20 border-t border-white/10 bg-navy-950 py-16 sm:border-t-0 sm:py-24"
     >
       <div className="container-page grid items-center gap-14 lg:grid-cols-2">
         {/* Photo */}

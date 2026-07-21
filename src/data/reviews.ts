@@ -29,21 +29,21 @@ export const reviews: Review[] = [
     name: NEEDS_INPUT("Reviewer two"),
     rating: 5,
     quote: NEEDS_INPUT(
-      "A second placeholder review — replace with a real testimonial once collected.",
+      "A second placeholder review. Replace with a real testimonial once collected.",
     ),
   },
   {
     name: NEEDS_INPUT("Reviewer three"),
     rating: 5,
     quote: NEEDS_INPUT(
-      "A third placeholder review — replace with a real testimonial once collected.",
+      "A third placeholder review. Replace with a real testimonial once collected.",
     ),
   },
   {
     name: NEEDS_INPUT("Reviewer four"),
     rating: 5,
     quote: NEEDS_INPUT(
-      "A fourth placeholder review — replace with a real testimonial once collected.",
+      "A fourth placeholder review. Replace with a real testimonial once collected.",
     ),
   },
 ];

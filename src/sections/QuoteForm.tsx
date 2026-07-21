@@ -84,7 +84,7 @@ export function QuoteForm() {
   return (
     <section
       id="quote"
-      className="fade-b-to-950 relative scroll-mt-20 overflow-hidden bg-navy-900 py-16 sm:py-24"
+      className="fade-b-to-950 relative scroll-mt-20 overflow-hidden border-t border-white/10 bg-navy-900 py-16 sm:border-t-0 sm:py-24"
     >
       <div className="bg-blueprint absolute inset-0 opacity-60" aria-hidden />
       <div className="container-page relative grid gap-12 lg:grid-cols-2">
@@ -147,7 +147,7 @@ export function QuoteForm() {
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CheckCircle2 className="mb-4 h-14 w-14 text-accent-500" aria-hidden />
               <h3 className="text-xl font-bold text-navy-900">
-                Thanks — your enquiry's on its way!
+                Thanks, your enquiry's on its way!
               </h3>
               <p className="mt-2 text-navy-600">
                 We'll be in touch shortly. For anything urgent, call{" "}

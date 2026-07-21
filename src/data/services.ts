@@ -28,11 +28,11 @@ export const services: Service[] = [
     id: "renovations",
     title: "Renovations & Extensions",
     description:
-      "Single rooms to full extensions — planned well, built properly, finished to last.",
+      "Single rooms to full extensions, planned well, built properly, finished to last.",
     icon: Hammer,
     category: "renovations",
     longDescription:
-      "We handle renovations and extensions end to end — planning, approvals, trades, and the build itself. New work sits cleanly against old, the job runs to the plan we agreed, and you deal with one builder the whole way through.",
+      "We handle renovations and extensions end to end: planning, approvals, trades, and the build itself. New work sits cleanly against old, the job runs to the plan we agreed, and you deal with one builder the whole way through.",
     // Capped at 4 (spec 06): dropped "Design and planning support" as the most
     // generic of the five.
     included: [
@@ -50,7 +50,7 @@ export const services: Service[] = [
     icon: House,
     category: "new-builds",
     longDescription:
-      "A new home is a big undertaking, so we keep it simple: one point of contact, a realistic schedule, and straight answers on where your money is best spent. The result is a solid, well-finished home — the standard we'd want for our own families.",
+      "A new home is a big undertaking, so we keep it simple: one point of contact, a realistic schedule, and straight answers on where your money is best spent. The result is a solid, well-finished home, the standard we'd want for our own families.",
     // Capped at 4 (spec 06): dropped "Licensed trades coordinated on your
     // behalf" — implied by full end-to-end management.
     included: [
@@ -68,7 +68,7 @@ export const services: Service[] = [
     icon: Bath,
     category: "bathrooms",
     longDescription:
-      "Bathrooms are small rooms with no margin for error. We strip out the old, waterproof properly, tile straight, and fit off cleanly — so it looks sharp on day one and stays watertight for years.",
+      "Bathrooms are small rooms with no margin for error. We strip out the old, waterproof properly, tile straight, and fit off cleanly, so it looks sharp on day one and stays watertight for years.",
     // Capped at 4 (spec 06): dropped "Underfloor heating (optional)" as the
     // only optional, non-core item.
     included: [
@@ -86,7 +86,7 @@ export const services: Service[] = [
     icon: Fence,
     category: "outdoor",
     longDescription:
-      "Canberra summers and frosts are hard on outdoor timber, so we build decks, pergolas, and fences to take it — properly detailed, correctly fixed, and finished to last. Outdoor spaces you'll actually use, year-round.",
+      "Canberra summers and frosts are hard on outdoor timber, so we build decks, pergolas, and fences to take it, properly detailed, correctly fixed, and finished to last. Outdoor spaces you'll actually use, year-round.",
     // Capped at 4 (spec 06): dropped "Weatherproof, low-maintenance finishes"
     // as the most generic marketing line.
     included: [
