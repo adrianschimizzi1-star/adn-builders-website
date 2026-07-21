@@ -45,7 +45,7 @@ export const about = {
   /** Expanded bio — /about page (trimmed per spec 08; draft, confirm with client). */
   longBio: [
     "ADN Builders is a local, family-run team that's been building across Canberra & the Capital Region for more than 25 years, a reputation grown on referrals and repeat clients.",
-    "You deal directly with the builders, not a call centre. We manage the whole job and every trade, so you have one point of contact from the first site visit to handover, with honest quotes, tidy sites, and workmanship built to last.",
+    "You deal with the builders directly. We manage the whole job and every trade, so you have one point of contact from the first site visit to handover, with honest quotes, tidy sites, and workmanship built to last.",
   ],
 
   /** How we work, start to finish — shown on the /about detail page. */
