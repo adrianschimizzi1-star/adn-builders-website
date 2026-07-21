@@ -12,7 +12,7 @@ import { useGalleryTiles } from "../hooks/usePhotos";
 export default function ServicesPage() {
   usePageMeta(
     "Building Services in Canberra | ADN Builders",
-    "Renovations & extensions, new home builds, bathrooms, and decks & outdoor — see what each ADN Builders service includes, with recent Canberra projects.",
+    "Renovations & extensions, new home builds, bathrooms, and decks & outdoor. See what each ADN Builders service includes, with recent Canberra projects.",
   );
 
   // One shared lightbox for every service strip on the page. `tile` is the set
@@ -39,7 +39,7 @@ export default function ServicesPage() {
           <p className="mt-5 text-base leading-relaxed text-navy-300 sm:text-lg">
             From first sketch to final finish, ADN Builders handles the trades,
             timelines, and quality across every kind of residential project in
-            Canberra. Here's what each service covers — with recent work to match.
+            Canberra. Here's what each service covers, with recent work to match.
           </p>
         </div>
       </section>
@@ -68,72 +68,74 @@ export default function ServicesPage() {
               i % 2 === 0 ? "bg-navy-950" : "bg-navy-900"
             }`}
           >
-            <div className="container-page grid gap-10 lg:grid-cols-2 lg:gap-14">
-              {/* Copy */}
-              <div className="reveal">
-                <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent-500/10 text-accent-400 ring-1 ring-inset ring-accent-500/20">
-                  <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
-                </span>
-                <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
-                  {service.title}
-                </h2>
-                <p className="mt-4 text-base leading-relaxed text-navy-200">
-                  {service.longDescription ?? service.description}
-                </p>
-
-                {service.included && (
-                  <>
-                    <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-navy-400">
-                      What's included
-                    </h3>
-                    <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
-                      {service.included.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-start gap-2.5 text-sm text-navy-200"
-                        >
-                          <Check
-                            className="mt-0.5 h-4 w-4 shrink-0 text-accent-400"
-                            aria-hidden
-                          />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-
-                <Button to="/quote" className="mt-8">
-                  Enquire about this service
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Button>
-              </div>
-
-              {/* Related gallery strip */}
-              <div className="reveal">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-navy-400">
-                    Recent {service.title.toLowerCase()} projects
-                  </h3>
-                  {/* Deep-links to Projects with this category pre-selected */}
-                  <Link
-                    to={`/gallery?cat=${service.category}`}
-                    className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-semibold text-accent-400 transition-colors hover:text-accent-300"
-                  >
-                    View all
-                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                  </Link>
-                </div>
-                {related.length > 0 ? (
-                  <GalleryGrid
-                    tiles={related}
-                    onSelect={(i) => setLb({ tile: related[i], index: 0 })}
-                  />
-                ) : (
-                  <p className="text-sm text-navy-400">
-                    Project photos coming soon.
+            <div className="container-page">
+              <div className="grid gap-8 rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:gap-10 sm:p-8 lg:grid-cols-2 lg:gap-14 lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0">
+                {/* Copy */}
+                <div className="reveal">
+                  <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent-500/10 text-accent-400 ring-1 ring-inset ring-accent-500/20">
+                    <Icon className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+                    {service.title}
+                  </h2>
+                  <p className="mt-4 text-base leading-relaxed text-navy-200">
+                    {service.longDescription ?? service.description}
                   </p>
-                )}
+
+                  {service.included && (
+                    <>
+                      <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-navy-400">
+                        What's included
+                      </h3>
+                      <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                        {service.included.map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2.5 text-sm text-navy-200"
+                          >
+                            <Check
+                              className="mt-0.5 h-4 w-4 shrink-0 text-accent-400"
+                              aria-hidden
+                            />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+
+                  <Button to="/quote" className="mt-8">
+                    Enquire about this service
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Button>
+                </div>
+
+                {/* Related gallery strip */}
+                <div className="reveal">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-navy-400">
+                      Recent {service.title.toLowerCase()} projects
+                    </h3>
+                    {/* Deep-links to Projects with this category pre-selected */}
+                    <Link
+                      to={`/gallery?cat=${service.category}`}
+                      className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs font-semibold text-accent-400 transition-colors hover:text-accent-300"
+                    >
+                      View all
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                    </Link>
+                  </div>
+                  {related.length > 0 ? (
+                    <GalleryGrid
+                      tiles={related}
+                      onSelect={(i) => setLb({ tile: related[i], index: 0 })}
+                    />
+                  ) : (
+                    <p className="text-sm text-navy-400">
+                      Project photos coming soon.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </section>

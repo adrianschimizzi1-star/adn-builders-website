@@ -8,7 +8,7 @@ import { useSiteContent } from "../hooks/useSiteContent";
 export default function AboutPage() {
   usePageMeta(
     "About Us | ADN Builders",
-    "Meet the team behind ADN Builders — 25+ years of licensed, insured building experience in Canberra, and how we work from first call to handover.",
+    "Meet the team behind ADN Builders. 25+ years of licensed, insured building experience in Canberra, and how we work from first call to handover.",
   );
 
   // Team cards come from the admin (spec 05, step 7). No placeholder fallback:

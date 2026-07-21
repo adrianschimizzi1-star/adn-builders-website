@@ -11,7 +11,7 @@ export function Services() {
   const { tiles } = useGalleryTiles();
 
   return (
-    <section id="services" className="scroll-mt-20 bg-navy-950 pb-10 pt-16 sm:py-24">
+    <section id="services" className="scroll-mt-20 border-t border-white/10 bg-navy-950 pb-10 pt-16 sm:border-t-0 sm:py-24">
       <div className="container-page">
         <SectionHeading
           eyebrow="What we do"

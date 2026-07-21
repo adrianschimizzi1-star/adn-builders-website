@@ -13,7 +13,7 @@ import { usePageMeta } from "../hooks/usePageMeta";
 export default function QuotePage() {
   usePageMeta(
     "Book a Quote | ADN Builders",
-    "Book a free, no-obligation quote with ADN Builders — licensed, insured builders serving Canberra & the Capital Region. Call, email, or send us your project details.",
+    "Book a free, no-obligation quote with ADN Builders. Licensed, insured builders serving Canberra & the Capital Region. Call, email, or send us your project details.",
   );
 
   return (
@@ -30,7 +30,7 @@ export default function QuotePage() {
           </h1>
           <p className="mt-5 text-base leading-relaxed text-navy-300 sm:text-lg">
             Tell us about your project and we'll come back to you with a free,
-            no-obligation quote. Prefer to talk it through? Call or email — the
+            no-obligation quote. Prefer to talk it through? Call or email. The
             details are right below.
           </p>
         </div>

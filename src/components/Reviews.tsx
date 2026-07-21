@@ -65,7 +65,7 @@ export function Reviews({
               &ldquo;{review.quote}&rdquo;
             </blockquote>
             <figcaption className="mt-4 text-sm font-semibold text-navy-300">
-              — {review.name}
+              {review.name}
             </figcaption>
             {googleReviewsUrl && (
               <a
@@ -128,7 +128,7 @@ export function Reviews({
           </div>
         ) : (
           <p className="mt-10 text-navy-400">
-            Reviews are on their way — check back soon.
+            Reviews are on their way. Check back soon.
           </p>
         )}
 
